@@ -15,14 +15,14 @@ describe('ReservationService', () => {
     title: 'Test Event',
     remainingPlaces: 10,
     managerId: 'admin1',
-    status: EventStatus.PUBLISHED,
+    status: 'PUBLISHED' as EventStatus,
   };
 
   const mockReservation = {
     id: '1',
     userId: 'user1',
     eventId: '1',
-    status: ReservationStatus.PENDING,
+    status: 'PENDING' as ReservationStatus,
     event: mockEvent,
   };
 
@@ -77,10 +77,10 @@ describe('ReservationService', () => {
 
   it('should cancel reservation', async () => {
     mockReservationRepository.findById.mockResolvedValue(mockReservation);
-    mockReservationRepository.updateStatus.mockResolvedValue({ ...mockReservation, status: ReservationStatus.CANCELED });
+    mockReservationRepository.updateStatus.mockResolvedValue({ ...mockReservation, status: 'CANCELED' as ReservationStatus });
     
     const result = await service.cancel('1', 'user1');
-    expect(result.status).toBe(ReservationStatus.CANCELED);
+    expect(result.status).toBe('CANCELED');
     expect(mockEventRepository.updateRemainingPlaces).toHaveBeenCalledWith('1', 11);
   });
 });

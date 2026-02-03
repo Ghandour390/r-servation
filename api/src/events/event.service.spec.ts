@@ -16,7 +16,7 @@ describe('EventService', () => {
     location: 'Test Location',
     maxCapacity: 100,
     remainingPlaces: 100,
-    status: EventStatus.DRAFT,
+    status: 'DRAFT' as EventStatus,
     managerId: 'user1',
     createdAt: new Date(),
     updatedAt: new Date(),
