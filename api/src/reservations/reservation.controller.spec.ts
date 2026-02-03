@@ -13,7 +13,7 @@ describe('ReservationController', () => {
     id: '1',
     userId: 'user1',
     eventId: '1',
-    status: ReservationStatus.PENDING,
+    status: 'PENDING' as ReservationStatus,
   };
 
   const mockService = {
@@ -58,14 +58,14 @@ describe('ReservationController', () => {
   });
 
   it('should update reservation status', async () => {
-    mockService.updateStatus.mockResolvedValue({ ...mockReservation, status: ReservationStatus.CONFIRMED });
-    const result = await controller.updateStatus('1', { status: ReservationStatus.CONFIRMED }, mockRequest);
-    expect(result.status).toBe(ReservationStatus.CONFIRMED);
+    mockService.updateStatus.mockResolvedValue({ ...mockReservation, status: 'CONFIRMED' as ReservationStatus });
+    const result = await controller.updateStatus('1', { status: 'CONFIRMED' as ReservationStatus }, mockRequest);
+    expect(result.status).toBe('CONFIRMED');
   });
 
   it('should cancel reservation', async () => {
-    mockService.cancel.mockResolvedValue({ ...mockReservation, status: ReservationStatus.CANCELED });
+    mockService.cancel.mockResolvedValue({ ...mockReservation, status: 'CANCELED' as ReservationStatus });
     const result = await controller.cancel('1', mockRequest);
-    expect(result.status).toBe(ReservationStatus.CANCELED);
+    expect(result.status).toBe('CANCELED');
   });
 });
