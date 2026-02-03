@@ -11,7 +11,7 @@ export class EventController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles('ADMIN')
   create(@Body() data: any, @Request() req) {
     return this.eventService.create({ ...data, managerId: req.user.sub });
   }
@@ -30,21 +30,21 @@ export class EventController {
 
   @Put(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles('ADMIN')
   update(@Param('id') id: string, @Body() data: any, @Request() req) {
     return this.eventService.update(id, data, req.user.sub);
   }
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles('ADMIN')
   delete(@Param('id') id: string, @Request() req) {
     return this.eventService.delete(id, req.user.sub);
   }
 
   @Put(':id/publish')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles('ADMIN')
   publish(@Param('id') id: string, @Request() req) {
     return this.eventService.publish(id, req.user.sub);
   }

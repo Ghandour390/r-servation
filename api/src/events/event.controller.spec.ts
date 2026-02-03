@@ -28,7 +28,7 @@ describe('EventController', () => {
   };
 
   const mockRequest = {
-    user: { sub: 'user1' },
+    user: { sub: 'user1', role: 'ADMIN' },
   };
 
   beforeEach(async () => {
@@ -55,13 +55,13 @@ describe('EventController', () => {
 
   it('should find all events', async () => {
     mockService.findAll.mockResolvedValue([mockEvent]);
-    const result = await controller.findAll();
+    const result = await controller.findAll(mockRequest);
     expect(result).toEqual([mockEvent]);
   });
 
   it('should find event by id', async () => {
     mockService.findById.mockResolvedValue(mockEvent);
-    const result = await controller.findById('1');
+    const result = await controller.findById('1', mockRequest);
     expect(result).toEqual(mockEvent);
   });
 

@@ -17,7 +17,7 @@ export class ReservationController {
 
   @Get()
   @UseGuards(RolesGuard)
-
+  @Roles('ADMIN')
   findAll() {
     return this.reservationService.findAll();
   }
@@ -34,7 +34,7 @@ export class ReservationController {
 
   @Put(':id/status')
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles('ADMIN')
   updateStatus(@Param('id') id: string, @Body() { status }: { status: ReservationStatus }, @Request() req) {
     return this.reservationService.updateStatus(id, status, req.user.sub);
   }

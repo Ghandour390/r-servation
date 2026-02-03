@@ -34,12 +34,12 @@ describe('AuthController', () => {
 
   describe('register', () => {
     it('should register a new user', async () => {
-      const dto = { email: 'test@test.com', password: 'Pass123!', firstName: 'John', lastName: 'Doe' };
+      const dto = { email: 'test@test.com', password: 'Pass123!', firstName: 'John', lastName: 'Doe', role: 'PARTICIPANT' };
       const result = { user: { id: 1, email: 'test@test.com' }, message: 'Utilisateur créé. Veuillez vérifier votre email.' };
       jest.spyOn(authService, 'register').mockResolvedValue(result as any);
 
       expect(await controller.register(dto)).toBe(result);
-      expect(authService.register).toHaveBeenCalledWith('test@test.com', 'Pass123!', 'John', 'Doe', undefined);
+      expect(authService.register).toHaveBeenCalledWith('test@test.com', 'Pass123!', 'John', 'Doe', 'PARTICIPANT');
     });
   });
 

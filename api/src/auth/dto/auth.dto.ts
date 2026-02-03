@@ -33,9 +33,9 @@ export class RegisterDto {
   @IsString()
   lastName: string;
 
-  @ApiProperty({ example: 'PARTICIPANT', enum: Role, required: false })
+  @ApiProperty({ example: 'PARTICIPANT', enum: ['ADMIN', 'PARTICIPANT'], required: false })
   @IsOptional()
-  @IsEnum(Role)
+  @IsEnum(['ADMIN', 'PARTICIPANT'])
   role?: Role;
 }
 
