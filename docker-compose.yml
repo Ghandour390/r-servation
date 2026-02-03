@@ -5,14 +5,16 @@ services:
     container_name: res-db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
-      POSTGRES_DB: ${DB_NAME:-events_db}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events_db
+      POSTGRES_HOST_AUTH_METHOD: md5
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    networks:
+      - res-network
   pgadmin:
     image: dpage/pgadmin4
     container_name: res-pgadmin
@@ -23,6 +25,8 @@ services:
       - "5050:80"
     depends_on:
       - db
+    networks:
+      - res-network
 
   
   redis:
@@ -30,6 +34,8 @@ services:
     container_name: res-redis
     ports:
       - "6379:6379"
+    networks:
+      - res-network
 
   api:
     build:
@@ -46,6 +52,8 @@ services:
       - db
       - redis
       - minio
+    networks:
+      - res-network
   minio:
     image: minio/minio
     container_name: res-minio
@@ -58,6 +66,8 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+    networks:
+      - res-network
 
   client:
     build:
@@ -70,7 +80,12 @@ services:
       NEXT_PUBLIC_API_URL: http://api:5000
     depends_on:
       - api
+    networks:
+      - res-network
 
 volumes:
   postgres_data:
   minio_data:
+
+networks:
+  res-network:
