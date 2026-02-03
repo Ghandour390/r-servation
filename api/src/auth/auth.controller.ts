@@ -13,7 +13,7 @@ export class AuthController {
       registerDto.password,
       registerDto.firstName,
       registerDto.lastName,
-      registerDto.role,
+      registerDto.role = "PARTICIPANT",
     );
   }
 

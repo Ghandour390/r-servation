@@ -6,7 +6,6 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '@prisma/client';
 
 @Controller('events')
-@UseGuards(JwtAuthGuard)
 export class EventController {
   constructor(private eventService: EventService) {}
 
@@ -18,13 +17,15 @@ export class EventController {
   }
 
   @Get()
-  findAll() {
-    return this.eventService.findAll();
+  findAll(@Request() req) {
+    const userRole = req.user?.role;
+    return this.eventService.findAll(userRole);
   }
 
   @Get(':id')
-  findById(@Param('id') id: string) {
-    return this.eventService.findById(id);
+  findById(@Param('id') id: string, @Request() req) {
+    const userRole = req.user?.role;
+    return this.eventService.findById(id, userRole);
   }
 
   @Put(':id')

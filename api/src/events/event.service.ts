@@ -21,14 +21,42 @@ export class EventService {
     });
   }
 
-  async findAll(): Promise<Event[]> {
+  async findAll(userRole?: string): Promise<Event[]> {
+    if (userRole === 'ADMIN') {
+      return this.eventRepository.findMany({
+        include: { 
+          manager: {
+            select: { id: true, firstName: true, lastName: true, email: true }
+          },
+          reservations: {
+            include: { user: { select: { firstName: true, lastName: true, email: true } } }
+          }
+        }
+      });
+    }
+    
     return this.eventRepository.findMany({
-      include: { manager: true, reservations: true }
+      include: { 
+        manager: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        },
+        _count: { select: { reservations: true } }
+      }
     });
   }
 
-  async findById(id: string): Promise<Event> {
-    const event = await this.eventRepository.findById(id);
+  async findById(id: string, userRole?: string): Promise<Event> {
+    const includeOptions = userRole === 'ADMIN' 
+      ? {
+          manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+          reservations: { include: { user: { select: { firstName: true, lastName: true, email: true } } } }
+        }
+      : {
+          manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+          _count: { select: { reservations: true } }
+        };
+    
+    const event = await this.eventRepository.findById(id, { include: includeOptions });
     if (!event) throw new NotFoundException('Event not found');
     return event;
   }

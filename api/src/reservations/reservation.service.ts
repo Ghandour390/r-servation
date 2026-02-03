@@ -44,17 +44,20 @@ export class ReservationService {
   }
 
   async updateStatus(id: string, status: ReservationStatus, userId: string): Promise<Reservation> {
-    const reservation = await this.findById(id);
+    const reservation = await this.reservationRepository.findById(id) as any;
+    if (!reservation) throw new NotFoundException('Reservation not found');
     if (reservation.event.managerId !== userId) throw new ForbiddenException('Not authorized');
     return this.reservationRepository.updateStatus(id, status);
   }
 
   async cancel(id: string, userId: string): Promise<Reservation> {
-    const reservation = await this.findById(id);
+    const reservation = await this.reservationRepository.findById(id);
+    if (!reservation) throw new NotFoundException('Reservation not found');
     if (reservation.userId !== userId) throw new ForbiddenException('Not authorized');
     
+    const event = await this.eventRepository.findById(reservation.eventId);
     const updated = await this.reservationRepository.updateStatus(id, ReservationStatus.CANCELED);
-    await this.eventRepository.updateRemainingPlaces(reservation.eventId, reservation.event.remainingPlaces + 1);
+    await this.eventRepository.updateRemainingPlaces(reservation.eventId, event.remainingPlaces + 1);
     return updated;
   }
 }
