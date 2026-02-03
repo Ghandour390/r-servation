@@ -11,7 +11,7 @@ describe('ReservationRepository', () => {
     id: '1',
     userId: '1',
     eventId: '1',
-    status: ReservationStatus.PENDING,
+    status: 'PENDING' as ReservationStatus,
     ticketUrl: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -47,10 +47,10 @@ describe('ReservationRepository', () => {
   });
 
   it('should update status', async () => {
-    const updated = { ...mockReservation, status: ReservationStatus.CONFIRMED };
+    const updated = { ...mockReservation, status: 'CONFIRMED' as ReservationStatus };
     mockPrisma.reservation.update.mockResolvedValue(updated);
-    const result = await repository.updateStatus('1', ReservationStatus.CONFIRMED);
-    expect(result.status).toBe(ReservationStatus.CONFIRMED);
+    const result = await repository.updateStatus('1', 'CONFIRMED' as ReservationStatus);
+    expect(result.status).toBe('CONFIRMED');
   });
 
   it('should count by event id', async () => {

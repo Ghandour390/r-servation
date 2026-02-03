@@ -13,7 +13,7 @@ describe('UserRepository', () => {
     password: 'hashedPassword',
     firstName: 'John',
     lastName: 'Doe',
-    role: Role.PARTICIPANT,
+    role: 'PARTICIPANT' as Role,
     isEmailVerified: false,
     createdAt: new Date(),
     updatedAt: new Date(),

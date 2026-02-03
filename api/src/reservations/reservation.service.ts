@@ -56,7 +56,7 @@ export class ReservationService {
     if (reservation.userId !== userId) throw new ForbiddenException('Not authorized');
     
     const event = await this.eventRepository.findById(reservation.eventId);
-    const updated = await this.reservationRepository.updateStatus(id, ReservationStatus.CANCELED);
+    const updated = await this.reservationRepository.updateStatus(id, 'CANCELED' as ReservationStatus);
     await this.eventRepository.updateRemainingPlaces(reservation.eventId, event.remainingPlaces + 1);
     return updated;
   }
