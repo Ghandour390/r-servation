@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  PARTICIPANT
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELED
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  REFUSED
+  CANCELED
+}
+
+model User {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  password         String
+  role             Role          @default(PARTICIPANT)
+  firstName        String
+  lastName         String
+  isEmailVerified  Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  // Relations
+  reservations     Reservation[]
+  events           Event[]       // Events managed by admin users
+  
+  @@map("users")
+}
+
+model Event {
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  dateTime         DateTime
+  location         String
+  maxCapacity      Int
+  remainingPlaces  Int
+  status           EventStatus   @default(DRAFT)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  // Relations
+  managerId        String
+  manager          User          @relation(fields: [managerId], references: [id])
+  reservations     Reservation[]
+  
+  @@map("events")
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  status      ReservationStatus @default(PENDING)
+  ticketUrl   String?
+  
+  // Relations
+  userId      String
+  user        User              @relation(fields: [userId], references: [id])
+  eventId     String
+  event       Event             @relation(fields: [eventId], references: [id])
+  
+  @@unique([userId, eventId]) 
+  @@map("reservations")
+}
