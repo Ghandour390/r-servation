@@ -7,7 +7,31 @@
   },
   "item": [
     {
-      "name": "Auth",
+      "name": "Untitled Folder",
+      "item": [
+        {
+          "name": "Health Check",
+          "id": "app-health-check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "app-endpoints"
+    },
+    {
+      "name": "App",
       "item": [
         {
           "name": "Register User",
@@ -324,7 +348,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Conférence Tech 2024\",\n  \"description\": \"Une conférence sur les dernières technologies\",\n  \"date\": \"2024-12-31T10:00:00Z\",\n  \"location\": \"Centre de conférences\",\n  \"capacity\": 100,\n  \"price\": 50.00,\n  \"category\": \"CONFERENCE\"\n}"
+              "raw": "{\n  \"title\": \"Conférence Tech 2024\",\n  \"description\": \"Une conférence sur les dernières technologies\",\n  \"dateTime\": \"2024-12-31T10:00:00Z\",\n  \"location\": \"Centre de conférences\",\n  \"maxCapacity\": 100\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/events",
@@ -339,8 +363,26 @@
           "response": []
         },
         {
-          "name": "Get All Events",
+          "name": "Get All Events (Public)",
           "id": "c2ec5712-544f-4acd-ae61-66b385db798d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Events (Authenticated)",
+          "id": "c2ec5712-544f-4acd-ae61-66b385db798e",
           "request": {
             "method": "GET",
             "header": [
@@ -362,8 +404,27 @@
           "response": []
         },
         {
-          "name": "Get Event by ID",
+          "name": "Get Event by ID (Public)",
           "id": "c3e82dfc-f21d-4aae-aa36-62bb6973979c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/events/{{eventId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "events",
+                "{{eventId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Event by ID (Authenticated)",
+          "id": "c3e82dfc-f21d-4aae-aa36-62bb6973979d",
           "request": {
             "method": "GET",
             "header": [
@@ -402,7 +463,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Conférence Tech 2024 - Mise à jour\",\n  \"description\": \"Une conférence mise à jour sur les dernières technologies\",\n  \"capacity\": 150,\n  \"price\": 60.00\n}"
+              "raw": "{\n  \"title\": \"Conférence Tech 2024 - Mise à jour\",\n  \"description\": \"Une conférence mise à jour sur les dernières technologies\",\n  \"maxCapacity\": 150\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/events/{{eventId}}",
@@ -754,7 +815,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"title\": \"Test Event Flow\",\n  \"description\": \"Event pour test complet\",\n  \"date\": \"2024-12-31T15:00:00Z\",\n  \"location\": \"Test Location\",\n  \"capacity\": 50,\n  \"price\": 25.00,\n  \"category\": \"WORKSHOP\"\n}"
+                  "raw": "{\n  \"title\": \"Test Event Flow\",\n  \"description\": \"Event pour test complet\",\n  \"dateTime\": \"2024-12-31T15:00:00Z\",\n  \"location\": \"Test Location\",\n  \"maxCapacity\": 50\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/events",
@@ -936,31 +997,31 @@
   ],
   "variable": [
     {
-      "id": "e45ec94f-a7af-4854-97cc-23be0e1599f9",
+      "id": "4a79ad40-c692-4c19-ad3c-b7d864405030",
       "key": "baseUrl",
       "value": "http://localhost:3000",
       "type": "string"
     },
     {
-      "id": "9be1045b-00a7-40d0-845a-d2260b44158d",
+      "id": "33ccab1a-a5fe-480b-a62a-b67993e924de",
       "key": "token",
       "value": "",
       "type": "string"
     },
     {
-      "id": "e9768994-2f5a-45a4-af77-788af8818083",
+      "id": "036dd204-63a4-4f83-a8e1-b134bac1c0a5",
       "key": "userId",
       "value": "",
       "type": "string"
     },
     {
-      "id": "40d33b70-e2ba-41aa-8572-8638e96f35b7",
+      "id": "eae83446-c04f-4b3b-9b7d-6b03a586e686",
       "key": "eventId",
       "value": "",
       "type": "string"
     },
     {
-      "id": "dc934ce4-e2d7-46a8-8a60-2ee8a4045ffc",
+      "id": "18cb9c39-3de6-4335-9971-2c1bed04bbeb",
       "key": "reservationId",
       "value": "",
       "type": "string"

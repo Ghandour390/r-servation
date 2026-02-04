@@ -15,7 +15,6 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -32,21 +31,20 @@ export default function RegisterPage() {
     }
   };
 
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-lg shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-white text-center mb-8">
+        <div className="card p-8">
+          <h1 className="text-3xl font-bold text-primary text-center mb-8">
             Sign up for an account
           </h1>
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-700"></div>
+              <div className="w-full border-t border-primary"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-400">or</span>
+              <span className="px-2 bg-card text-tertiary">or</span>
             </div>
           </div>
 
@@ -57,8 +55,8 @@ export default function RegisterPage() {
               </div>
             )}
 
-              <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-secondary mb-2">
                 Lastname
               </label>
               <input
@@ -66,14 +64,14 @@ export default function RegisterPage() {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your lastname"
                 required
               />
             </div>
 
-              <div>
-              <label htmlFor="firstname" className="block text-sm font-medium text-gray-300 mb-2">
+            <div>
+              <label htmlFor="firstname" className="block text-sm font-medium text-secondary mb-2">
                 Firstname
               </label>
               <input
@@ -81,14 +79,14 @@ export default function RegisterPage() {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your firstname"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
                 Email
               </label>
               <input
@@ -96,14 +94,14 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your email"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-secondary mb-2">
                 Password
               </label>
               <div className="relative">
@@ -112,14 +110,14 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder="Enter your password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,22 +136,22 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Connexion..." : "Continue"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-400">
-            Don't have an account?{" "}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-              login
+          <p className="mt-6 text-center text-sm text-tertiary">
+            Already have an account?{" "}
+            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              Login
             </Link>
           </p>
-            <p className="mt-0 text-center text-sm text-blue-400">
-            mot de passe oublié?{" "}
-            <Link href="/reset-password" className="text-blue-400 hover:text-blue-300 font-medium">
-               Reset Password
+          <p className="mt-2 text-center text-sm text-tertiary">
+            Forgot password?{" "}
+            <Link href="/resetPassword" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              Reset Password
             </Link>
           </p>
         </div>

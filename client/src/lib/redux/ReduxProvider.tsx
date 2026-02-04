@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import { useEffect, useState } from 'react';
 import { loadUser } from './slices/authSlice';
+import Cookies from 'js-cookie';
 
 export function ReduxProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
@@ -12,8 +13,8 @@ export function ReduxProvider({ children }: { children: React.ReactNode }) {
     // Debug: Check localStorage on mount
     console.log('🔄 ReduxProvider mounting...');
     console.log('📦 localStorage check:', {
-      hasToken: !!localStorage.getItem('access_token'),
-      hasRefresh: !!localStorage.getItem('refresh_token'),
+      hasToken: !!Cookies.get('access_token'),
+      hasRefresh: !!Cookies.get('refresh_token'),
       hasUser: !!localStorage.getItem('user'),
     });
     

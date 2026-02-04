@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -18,6 +19,13 @@ enum EventStatus {
   DRAFT
   PUBLISHED
   CANCELED
+}
+
+enum EventCategory {
+  CONFERENCE
+  WORKSHOP
+  SEMINAR
+  MEETING
 }
 
 enum ReservationStatus {
@@ -53,6 +61,8 @@ model Event {
   location         String
   maxCapacity      Int
   remainingPlaces  Int
+  price            Float?
+  category         EventCategory?
   status           EventStatus   @default(DRAFT)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt

@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { MinioModule } from './minio/minio.module';
 import { RedisModule } from './redis/redis.module';
@@ -20,10 +21,11 @@ import { RedisModule } from './redis/redis.module';
     AuthModule,
     EventsModule,
     ReservationsModule,
+    AdminModule,
     MailModule,
     MinioModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

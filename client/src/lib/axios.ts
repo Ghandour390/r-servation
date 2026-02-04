@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  baseURL: process.env.URL_BACKEND || 'http://localhost:5000',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,13 +29,27 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 
 // Request interceptor - add token
 axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
+    let token: string | undefined;
+
     if (typeof window !== 'undefined') {
-      const token = Cookies.get('access_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      // Client side
+      token = Cookies.get('access_token');
+    } else {
+      // Server side (Server Actions)
+      try {
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        token = cookieStore.get('access_token')?.value;
+      } catch (error) {
+        // Ignore error if not in Next.js server context
       }
     }
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => {
@@ -43,22 +57,25 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle 401 and refresh token
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Don't try to refresh on login/register/refresh endpoints
       const skipRefreshPaths = ['/auth/login', '/auth/register', '/auth/refresh'];
       if (skipRefreshPaths.some(path => originalRequest.url?.includes(path))) {
         return Promise.reject(error);
       }
 
+      // Skip refresh logic on server side
+      if (typeof window === 'undefined') {
+        return Promise.reject(error);
+      }
+
       if (isRefreshing) {
-        // Wait for the refresh to complete
+
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -73,7 +90,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = typeof window !== 'undefined' 
+        const refreshToken = typeof window !== 'undefined'
           ? Cookies.get('refresh_token')
           : null;
 
@@ -82,7 +99,7 @@ axiosInstance.interceptors.response.use(
         }
 
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/auth/refresh`,
+          `${process.env.URL_BACKEND || 'http://localhost:5000'}/auth/refresh`,
           { refresh_token: refreshToken },
           {
             headers: {
@@ -102,20 +119,18 @@ axiosInstance.interceptors.response.use(
         }
 
         processQueue(null, access_token);
-        
+
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError as Error, null);
-        
-        // Clear tokens and redirect to login
         if (typeof window !== 'undefined') {
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           Cookies.remove('user');
           window.location.href = '/login';
         }
-        
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

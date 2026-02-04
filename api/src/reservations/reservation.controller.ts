@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Request, ValidationPipe } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Role, ReservationStatus } from '@prisma/client';
+import { CreateReservationDto } from './dto/create-reservation.dto';
+import { UpdateReservationDto } from './dto/update-reservation.dto';
 
 @Controller('reservations')
 @UseGuards(JwtAuthGuard)
@@ -35,8 +37,8 @@ export class ReservationController {
   @Put(':id/status')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  updateStatus(@Param('id') id: string, @Body() { status }: { status: ReservationStatus }, @Request() req) {
-    return this.reservationService.updateStatus(id, status, req.user.sub);
+  updateStatus(@Param('id') id: string, @Body(ValidationPipe) data: UpdateReservationDto, @Request() req) {
+    return this.reservationService.updateStatus(id, data.status, req.user.sub);
   }
 
   @Put(':id/cancel')

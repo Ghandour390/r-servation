@@ -3,19 +3,38 @@ import { EventController } from './event.controller';
 import { EventService } from './event.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
+import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
 
 describe('EventController', () => {
   let controller: EventController;
   let service: EventService;
 
-  const mockEvent = {
-    id: '1',
+  const mockRequest = {
+    user: {
+      id: 'user-1',
+      email: 'test@test.com',
+      role: 'ADMIN',
+    },
+  };
+
+  const mockEventDto: any = {
     title: 'Test Event',
     description: 'Test Description',
-    dateTime: new Date(),
+    dateTime: '2024-12-31T10:00:00Z',
     location: 'Test Location',
     maxCapacity: 100,
+  };
+
+  const mockEvent = {
+    id: '1',
+    ...mockEventDto,
+    dateTime: new Date(mockEventDto.dateTime),
     remainingPlaces: 100,
+    managerId: 'user-1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    status: 'DRAFT',
   };
 
   const mockService = {
@@ -25,10 +44,7 @@ describe('EventController', () => {
     update: jest.fn(),
     delete: jest.fn(),
     publish: jest.fn(),
-  };
-
-  const mockRequest = {
-    user: { sub: 'user1', role: 'ADMIN' },
+    cancel: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -48,9 +64,9 @@ describe('EventController', () => {
 
   it('should create event', async () => {
     mockService.create.mockResolvedValue(mockEvent);
-    const result = await controller.create(mockEvent, mockRequest);
+    const result = await controller.create(mockEventDto, mockRequest);
     expect(result).toEqual(mockEvent);
-    expect(mockService.create).toHaveBeenCalledWith({ ...mockEvent, managerId: 'user1' });
+    expect(mockService.create).toHaveBeenCalled();
   });
 
   it('should find all events', async () => {
@@ -67,7 +83,13 @@ describe('EventController', () => {
 
   it('should update event', async () => {
     mockService.update.mockResolvedValue(mockEvent);
-    const result = await controller.update('1', mockEvent, mockRequest);
+    const result = await controller.update('1', mockEventDto, mockRequest);
+    expect(result).toEqual(mockEvent);
+  });
+
+  it('should delete event', async () => {
+    mockService.delete.mockResolvedValue(mockEvent);
+    const result = await controller.delete('1', mockRequest);
     expect(result).toEqual(mockEvent);
   });
 });

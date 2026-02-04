@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EventRepository } from './event.repository';
-import { Event, EventStatus } from '@prisma/client';
+import { Event, EventStatus, EventCategory } from '@prisma/client';
 
 @Injectable()
 export class EventService {
-  constructor(private eventRepository: EventRepository) {}
+  constructor(private eventRepository: EventRepository) { }
 
   async create(data: {
     title: string;
@@ -12,19 +12,22 @@ export class EventService {
     dateTime: Date;
     location: string;
     maxCapacity: number;
+    price?: number;
+    category?: EventCategory;
     managerId: string;
   }): Promise<Event> {
+    const { managerId, ...eventData } = data;
     return this.eventRepository.create({
-      ...data,
+      ...eventData,
       remainingPlaces: data.maxCapacity,
-      manager: { connect: { id: data.managerId } }
+      manager: { connect: { id: managerId } }
     });
   }
 
   async findAll(userRole?: string): Promise<Event[]> {
     if (userRole === 'ADMIN') {
       return this.eventRepository.findMany({
-        include: { 
+        include: {
           manager: {
             select: { id: true, firstName: true, lastName: true, email: true }
           },
@@ -34,9 +37,9 @@ export class EventService {
         }
       });
     }
-    
+
     return this.eventRepository.findMany({
-      include: { 
+      include: {
         manager: {
           select: { id: true, firstName: true, lastName: true, email: true }
         },
@@ -46,16 +49,16 @@ export class EventService {
   }
 
   async findById(id: string, userRole?: string): Promise<Event> {
-    const includeOptions = userRole === 'ADMIN' 
+    const includeOptions = userRole === 'ADMIN'
       ? {
-          manager: { select: { id: true, firstName: true, lastName: true, email: true } },
-          reservations: { include: { user: { select: { firstName: true, lastName: true, email: true } } } }
-        }
+        manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        reservations: { include: { user: { select: { firstName: true, lastName: true, email: true } } } }
+      }
       : {
-          manager: { select: { id: true, firstName: true, lastName: true, email: true } },
-          _count: { select: { reservations: true } }
-        };
-    
+        manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        _count: { select: { reservations: true } }
+      };
+
     const event = await this.eventRepository.findById(id, { include: includeOptions });
     if (!event) throw new NotFoundException('Event not found');
     return event;
@@ -75,5 +78,9 @@ export class EventService {
 
   async publish(id: string, userId: string): Promise<Event> {
     return this.update(id, { status: EventStatus.PUBLISHED }, userId);
+  }
+
+  async cancel(id: string, userId: string): Promise<Event> {
+    return this.update(id, { status: EventStatus.CANCELED }, userId);
   }
 }
