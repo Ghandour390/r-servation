@@ -10,11 +10,13 @@ import { UpdateReservationDto } from './dto/update-reservation.dto';
 @Controller('reservations')
 @UseGuards(JwtAuthGuard)
 export class ReservationController {
-  constructor(private reservationService: ReservationService) {}
+  constructor(private reservationService: ReservationService) { }
 
   @Post(':eventId')
+  @UseGuards(RolesGuard)
+  @Roles('PARTICIPANT')
   create(@Param('eventId') eventId: string, @Request() req) {
-    return this.reservationService.create(req.user.sub, eventId);
+    return this.reservationService.create(req.user.id, eventId);
   }
 
   @Get()
@@ -26,7 +28,7 @@ export class ReservationController {
 
   @Get('my')
   findMy(@Request() req) {
-    return this.reservationService.findByUser(req.user.sub);
+    return this.reservationService.findByUser(req.user.id);
   }
 
   @Get(':id')
@@ -38,11 +40,11 @@ export class ReservationController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   updateStatus(@Param('id') id: string, @Body(ValidationPipe) data: UpdateReservationDto, @Request() req) {
-    return this.reservationService.updateStatus(id, data.status, req.user.sub);
+    return this.reservationService.updateStatus(id, data.status, req.user.id);
   }
 
   @Put(':id/cancel')
   cancel(@Param('id') id: string, @Request() req) {
-    return this.reservationService.cancel(id, req.user.sub);
+    return this.reservationService.cancel(id, req.user.id);
   }
 }

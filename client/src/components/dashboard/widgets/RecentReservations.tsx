@@ -1,11 +1,16 @@
+'use client'
+
 import Link from 'next/link'
 import StatusBadge from '../StatusBadge'
 import { DashboardStats } from '@/lib/actions/admin'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function RecentReservations({ stats }: { stats: DashboardStats }) {
+    const { t, language } = useTranslation()
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
@@ -16,9 +21,9 @@ export default function RecentReservations({ stats }: { stats: DashboardStats })
     return (
         <div className="dashboard-card">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-primary">Recent Reservations</h3>
+                <h3 className="text-lg font-semibold text-primary">{t.dashboard.statistics.recentReservations}</h3>
                 <Link href="/dashboard/admin/reservations" className="text-sm text-indigo-600 hover:underline">
-                    View All
+                    {t.common.viewAll}
                 </Link>
             </div>
             <div className="space-y-3">
@@ -46,7 +51,7 @@ export default function RecentReservations({ stats }: { stats: DashboardStats })
                         </div>
                     ))
                 ) : (
-                    <p className="text-tertiary text-center py-4">No recent reservations</p>
+                    <p className="text-tertiary text-center py-4">{t.dashboard.statistics.noRecentReservations}</p>
                 )}
             </div>
         </div>

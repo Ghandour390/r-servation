@@ -13,7 +13,10 @@ import StatusBadge from '@/components/dashboard/StatusBadge'
 import DashboardLoading from '@/components/loading/DashboardLoading'
 import { getMyReservationsAction, Reservation } from '@/lib/actions/reservations'
 
+import { useTranslation } from '@/hooks/useTranslation'
+
 export default function ParticipantDashboardPage() {
+    const { t, language } = useTranslation()
     const [reservations, setReservations] = useState<Reservation[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -25,10 +28,10 @@ export default function ParticipantDashboardPage() {
                 if (result.success && result.data) {
                     setReservations(result.data)
                 } else {
-                    setError(result.error || 'Failed to load reservations')
+                    setError(result.error || t.participant.failedLoad)
                 }
             } catch (err) {
-                setError('Failed to load reservations')
+                setError(t.participant.failedLoad)
                 console.error('Error fetching reservations:', err)
             } finally {
                 setLoading(false)
@@ -36,11 +39,11 @@ export default function ParticipantDashboardPage() {
         }
 
         fetchReservations()
-    }, [])
+    }, [t.participant.failedLoad])
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
             weekday: 'short',
             month: 'short',
             day: 'numeric',
@@ -67,29 +70,29 @@ export default function ParticipantDashboardPage() {
         <div className="space-y-6">
             {/* Page Header */}
             <div>
-                <h1 className="text-2xl font-bold text-primary">Welcome Back!</h1>
-                <p className="text-secondary">Here's an overview of your reservations and upcoming events.</p>
+                <h1 className="text-2xl font-bold text-primary">{t.dashboard.participantCards.welcome}</h1>
+                <p className="text-secondary">{t.dashboard.participantCards.subtitle}</p>
             </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <DashboardCard
-                    title="Total Reservations"
+                    title={t.dashboard.participantCards.totalReservations}
                     value={reservations.length}
                     icon={<TicketIcon className="h-6 w-6" />}
-                    description="All time"
+                    description={t.dashboard.participantCards.allTime}
                 />
                 <DashboardCard
-                    title="Confirmed"
+                    title={t.dashboard.participantCards.confirmed}
                     value={confirmedReservations.length}
                     icon={<CalendarDaysIcon className="h-6 w-6" />}
-                    description="Ready to attend"
+                    description={t.dashboard.participantCards.ready}
                 />
                 <DashboardCard
-                    title="Pending"
+                    title={t.dashboard.participantCards.pending}
                     value={pendingReservations.length}
                     icon={<ClockIcon className="h-6 w-6" />}
-                    description="Awaiting confirmation"
+                    description={t.dashboard.participantCards.awaiting}
                 />
             </div>
 
@@ -103,12 +106,12 @@ export default function ParticipantDashboardPage() {
             {/* Upcoming Events */}
             <div className="dashboard-card">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-primary">Upcoming Events</h3>
+                    <h3 className="text-lg font-semibold text-primary">{t.dashboard.participantCards.upcomingEvents}</h3>
                     <Link
                         href="/dashboard/participant/reservations"
                         className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
-                        View all
+                        {t.dashboard.participantCards.viewAll}
                     </Link>
                 </div>
 
@@ -135,7 +138,7 @@ export default function ParticipantDashboardPage() {
                                             </div>
                                             <div className="flex items-center text-sm text-tertiary mt-1">
                                                 <MapPinIcon className="h-4 w-4 mr-1" />
-                                                {reservation.event?.location || 'TBD'}
+                                                {reservation.event?.location || t.participant.locationTBD}
                                             </div>
                                         </div>
                                         <StatusBadge status={reservation.status} />
@@ -147,9 +150,9 @@ export default function ParticipantDashboardPage() {
                 ) : (
                     <div className="text-center py-8">
                         <CalendarDaysIcon className="h-12 w-12 text-tertiary mx-auto mb-3" />
-                        <p className="text-tertiary mb-4">No upcoming events</p>
+                        <p className="text-tertiary mb-4">{t.dashboard.participantCards.noUpcoming}</p>
                         <Link href="/events" className="btn-primary">
-                            Browse Events
+                            {t.dashboard.participantCards.browseEvents}
                         </Link>
                     </div>
                 )}
@@ -165,8 +168,8 @@ export default function ParticipantDashboardPage() {
                         <CalendarDaysIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
-                        <h4 className="font-medium text-primary">Browse Events</h4>
-                        <p className="text-sm text-tertiary">Discover new events to attend</p>
+                        <h4 className="font-medium text-primary">{t.dashboard.participantCards.quickActions.browseTitle}</h4>
+                        <p className="text-sm text-tertiary">{t.dashboard.participantCards.quickActions.browseDesc}</p>
                     </div>
                 </Link>
 
@@ -178,8 +181,8 @@ export default function ParticipantDashboardPage() {
                         <TicketIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                        <h4 className="font-medium text-primary">My Reservations</h4>
-                        <p className="text-sm text-tertiary">Manage your tickets and bookings</p>
+                        <h4 className="font-medium text-primary">{t.dashboard.participantCards.quickActions.reservationsTitle}</h4>
+                        <p className="text-sm text-tertiary">{t.dashboard.participantCards.quickActions.reservationsDesc}</p>
                     </div>
                 </Link>
             </div>

@@ -11,6 +11,7 @@ import {
     updateReservationStatusAction,
     Reservation
 } from '@/lib/actions/reservations'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function AdminReservationsPage() {
     const [reservations, setReservations] = useState<Reservation[]>([])
@@ -26,6 +27,7 @@ export default function AdminReservationsPage() {
         action: null,
     })
     const [actionLoading, setActionLoading] = useState(false)
+    const { t } = useTranslation()
 
     const fetchReservations = async () => {
         try {
@@ -33,10 +35,10 @@ export default function AdminReservationsPage() {
             if (result.success && result.data) {
                 setReservations(result.data)
             } else {
-                setError(result.error || 'Failed to load reservations')
+                setError(result.error || t.common.error)
             }
         } catch (err) {
-            setError('Failed to load reservations')
+            setError(t.common.error)
             console.error('Error fetching reservations:', err)
         } finally {
             setLoading(false)
@@ -45,7 +47,7 @@ export default function AdminReservationsPage() {
 
     useEffect(() => {
         fetchReservations()
-    }, [])
+    }, [t])
 
     const handleAction = async () => {
         if (!actionModal.reservation || !actionModal.action) return
@@ -66,10 +68,10 @@ export default function AdminReservationsPage() {
                 )
                 setActionModal({ isOpen: false, reservation: null, action: null })
             } else {
-                alert(result.error || 'Failed to update reservation')
+                alert(result.error || t.common.error)
             }
         } catch (err) {
-            alert('Failed to update reservation')
+            alert(t.common.error)
         } finally {
             setActionLoading(false)
         }
@@ -89,7 +91,7 @@ export default function AdminReservationsPage() {
     const columns = [
         {
             key: 'user',
-            header: 'Participant',
+            header: t.reservations.participant,
             render: (reservation: Reservation) => (
                 <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
@@ -110,7 +112,7 @@ export default function AdminReservationsPage() {
         },
         {
             key: 'event.title',
-            header: 'Event',
+            header: t.reservations.event,
             sortable: true,
             render: (reservation: Reservation) => (
                 <span className="text-secondary">{reservation.event?.title || 'Unknown Event'}</span>
@@ -118,7 +120,7 @@ export default function AdminReservationsPage() {
         },
         {
             key: 'createdAt',
-            header: 'Reserved On',
+            header: t.reservations.reservedOn,
             sortable: true,
             render: (reservation: Reservation) => (
                 <span className="text-secondary text-sm">{formatDate(reservation.createdAt)}</span>
@@ -126,7 +128,7 @@ export default function AdminReservationsPage() {
         },
         {
             key: 'status',
-            header: 'Status',
+            header: t.reservations.status,
             sortable: true,
             render: (reservation: Reservation) => (
                 <StatusBadge status={reservation.status} type="reservation" />
@@ -134,7 +136,7 @@ export default function AdminReservationsPage() {
         },
         {
             key: 'actions',
-            header: 'Actions',
+            header: t.reservations.actions,
             render: (reservation: Reservation) => (
                 <div className="flex items-center space-x-2">
                     {reservation.status === 'PENDING' && (
@@ -148,7 +150,7 @@ export default function AdminReservationsPage() {
                                     })
                                 }
                                 className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-                                title="Confirm"
+                                title={t.reservations.confirmModal.confirmBtn}
                             >
                                 <CheckIcon className="h-4 w-4" />
                             </button>
@@ -161,14 +163,14 @@ export default function AdminReservationsPage() {
                                     })
                                 }
                                 className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                title="Refuse"
+                                title={t.reservations.confirmModal.refuseBtn}
                             >
                                 <XMarkIcon className="h-4 w-4" />
                             </button>
                         </>
                     )}
                     {reservation.status !== 'PENDING' && (
-                        <span className="text-xs text-tertiary">No actions available</span>
+                        <span className="text-xs text-tertiary">No actions available</span> // Need translation or keep hardcoded? Keeping hardcoded for now or use common.
                     )}
                 </div>
             ),
@@ -183,33 +185,33 @@ export default function AdminReservationsPage() {
         <div className="space-y-6">
             {/* Page Header */}
             <div>
-                <h1 className="text-2xl font-bold text-primary">Reservations Management</h1>
-                <p className="text-secondary">Review and manage participant reservations</p>
+                <h1 className="text-2xl font-bold text-primary">{t.reservations.title}</h1>
+                <p className="text-secondary">{t.reservations.description}</p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="dashboard-card text-center">
                     <p className="text-2xl font-bold text-primary">{reservations.length}</p>
-                    <p className="text-sm text-tertiary">Total</p>
+                    <p className="text-sm text-tertiary">{t.reservations.total}</p>
                 </div>
                 <div className="dashboard-card text-center">
                     <p className="text-2xl font-bold text-amber-600">
                         {reservations.filter((r) => r.status === 'PENDING').length}
                     </p>
-                    <p className="text-sm text-tertiary">Pending</p>
+                    <p className="text-sm text-tertiary">{t.reservations.pending}</p>
                 </div>
                 <div className="dashboard-card text-center">
                     <p className="text-2xl font-bold text-emerald-600">
                         {reservations.filter((r) => r.status === 'CONFIRMED').length}
                     </p>
-                    <p className="text-sm text-tertiary">Confirmed</p>
+                    <p className="text-sm text-tertiary">{t.reservations.confirmed}</p>
                 </div>
                 <div className="dashboard-card text-center">
                     <p className="text-2xl font-bold text-red-600">
                         {reservations.filter((r) => r.status === 'REFUSED' || r.status === 'CANCELED').length}
                     </p>
-                    <p className="text-sm text-tertiary">Cancelled/Refused</p>
+                    <p className="text-sm text-tertiary">{t.reservations.cancelledRefused}</p>
                 </div>
             </div>
 
@@ -221,13 +223,13 @@ export default function AdminReservationsPage() {
             )}
 
             {/* Reservations Table */}
-            <div className="dashboard-card p-0 overflow-hidden">
+            <div className="dashboard-card !p-0 overflow-hidden">
                 <DataTable
                     columns={columns}
                     data={reservations}
                     keyField="id"
                     pageSize={10}
-                    emptyMessage="No reservations found."
+                    emptyMessage={t.reservations.noReservations}
                 />
             </div>
 
@@ -236,19 +238,19 @@ export default function AdminReservationsPage() {
                 isOpen={actionModal.isOpen}
                 onClose={() => setActionModal({ isOpen: false, reservation: null, action: null })}
                 onConfirm={handleAction}
-                title={actionModal.action === 'confirm' ? 'Confirm Reservation' : 'Refuse Reservation'}
+                title={actionModal.action === 'confirm' ? t.reservations.confirmModal.confirmTitle : t.reservations.confirmModal.refuseTitle}
                 message={
                     actionModal.action === 'confirm'
-                        ? `Are you sure you want to confirm the reservation for ${actionModal.reservation?.user
+                        ? `${t.reservations.confirmModal.confirmMessage} ${actionModal.reservation?.user
                             ? `${actionModal.reservation.user.firstName} ${actionModal.reservation.user.lastName}`
                             : 'this participant'
                         }?`
-                        : `Are you sure you want to refuse the reservation for ${actionModal.reservation?.user
+                        : `${t.reservations.confirmModal.refuseMessage} ${actionModal.reservation?.user
                             ? `${actionModal.reservation.user.firstName} ${actionModal.reservation.user.lastName}`
                             : 'this participant'
-                        }? They will be notified.`
+                        }? ${t.reservations.confirmModal.refuseMessageSuffix}`
                 }
-                confirmText={actionModal.action === 'confirm' ? 'Confirm' : 'Refuse'}
+                confirmText={actionModal.action === 'confirm' ? t.reservations.confirmModal.confirmBtn : t.reservations.confirmModal.refuseBtn}
                 variant={actionModal.action === 'confirm' ? 'info' : 'danger'}
                 isLoading={actionLoading}
             />

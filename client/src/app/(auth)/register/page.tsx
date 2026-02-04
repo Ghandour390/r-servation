@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,11 +23,11 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await authApi.register({lastName, firstName, email, password });
+      await authApi.register({ lastName, firstName, email, password });
       localStorage.setItem("email", email);
       router.push("/verification-email");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Email déjà utilisé");
+      setError(err.response?.data?.message || t.auth.errorRegister);
     } finally {
       setLoading(false);
     }
@@ -36,7 +38,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="card p-8">
           <h1 className="text-3xl font-bold text-primary text-center mb-8">
-            Sign up for an account
+            {t.auth.registerTitle}
           </h1>
 
           <div className="relative mb-6">
@@ -44,7 +46,7 @@ export default function RegisterPage() {
               <div className="w-full border-t border-primary"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-tertiary">or</span>
+              <span className="px-2 bg-card text-tertiary">{t.auth.orSeparator}</span>
             </div>
           </div>
 
@@ -57,7 +59,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="lastName" className="block text-sm font-medium text-secondary mb-2">
-                Lastname
+                {t.auth.lastNameLabel}
               </label>
               <input
                 id="lastName"
@@ -65,14 +67,14 @@ export default function RegisterPage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter your lastname"
+                placeholder={t.auth.lastNamePlaceholder}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="firstname" className="block text-sm font-medium text-secondary mb-2">
-                Firstname
+                {t.auth.firstNameLabel}
               </label>
               <input
                 id="firstName"
@@ -80,14 +82,14 @@ export default function RegisterPage() {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter your firstname"
+                placeholder={t.auth.firstNamePlaceholder}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
-                Email
+                {t.auth.emailLabel}
               </label>
               <input
                 id="email"
@@ -95,14 +97,14 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter your email"
+                placeholder={t.auth.emailPlaceholder}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-secondary mb-2">
-                Password
+                {t.auth.passwordLabel}
               </label>
               <div className="relative">
                 <input
@@ -111,7 +113,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  placeholder={t.auth.passwordPlaceholder}
                   required
                 />
                 <button
@@ -138,20 +140,20 @@ export default function RegisterPage() {
               disabled={loading}
               className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Connexion..." : "Continue"}
+              {loading ? t.auth.registerLoading : t.auth.registerButton}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-tertiary">
-            Already have an account?{" "}
+            {t.auth.alreadyHaveAccount}{" "}
             <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
-              Login
+              {t.auth.signIn}
             </Link>
           </p>
           <p className="mt-2 text-center text-sm text-tertiary">
-            Forgot password?{" "}
+            {t.auth.forgotPassword}{" "}
             <Link href="/resetPassword" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
-              Reset Password
+              {t.auth.resetPasswordLink}
             </Link>
           </p>
         </div>

@@ -4,14 +4,22 @@
   --background: #ffffff;
   --foreground: #171717;
   /* Global light mode colors */
-  --color-bg-primary: 255 255 255; /* white */
-  --color-bg-secondary: 249 250 251; /* gray-50 */
-  --color-bg-tertiary: 243 244 246; /* gray-100 */
-  --color-text-primary: 17 24 39; /* gray-900 */
-  --color-text-secondary: 75 85 99; /* gray-600 */
-  --color-text-tertiary: 107 114 128; /* gray-500 */
-  --color-border: 229 231 235; /* gray-200 */
-  --color-card: 255 255 255; /* white */
+  --color-bg-primary: 255 255 255;
+  /* white */
+  --color-bg-secondary: 249 250 251;
+  /* gray-50 */
+  --color-bg-tertiary: 243 244 246;
+  /* gray-100 */
+  --color-text-primary: 17 24 39;
+  /* gray-900 */
+  --color-text-secondary: 75 85 99;
+  /* gray-600 */
+  --color-text-tertiary: 107 114 128;
+  /* gray-500 */
+  --color-border: 229 231 235;
+  /* gray-200 */
+  --color-card: 255 255 255;
+  /* white */
 }
 
 @theme inline {
@@ -32,14 +40,22 @@
   --background: #0a0a0a;
   --foreground: #ededed;
   /* Global dark mode colors */
-  --color-bg-primary: 17 24 39; /* gray-900 */
-  --color-bg-secondary: 31 41 55; /* gray-800 */
-  --color-bg-tertiary: 55 65 81; /* gray-700 */
-  --color-text-primary: 255 255 255; /* white */
-  --color-text-secondary: 209 213 219; /* gray-300 */
-  --color-text-tertiary: 156 163 175; /* gray-400 */
-  --color-border: 55 65 81; /* gray-700 */
-  --color-card: 31 41 55; /* gray-800 */
+  --color-bg-primary: 17 24 39;
+  /* gray-900 */
+  --color-bg-secondary: 31 41 55;
+  /* gray-800 */
+  --color-bg-tertiary: 55 65 81;
+  /* gray-700 */
+  --color-text-primary: 255 255 255;
+  /* white */
+  --color-text-secondary: 209 213 219;
+  /* gray-300 */
+  --color-text-tertiary: 156 163 175;
+  /* gray-400 */
+  --color-border: 55 65 81;
+  /* gray-700 */
+  --color-card: 31 41 55;
+  /* gray-800 */
 }
 
 body {
@@ -212,12 +228,23 @@ body {
   background-color: rgb(var(--color-card));
   border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  transition: box-shadow 0.2s;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+  transition: all 0.2s ease-in-out;
+}
+
+.dark .dashboard-card {
+  border-color: #312e81;
 }
 
 .dashboard-card:hover {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+  transform: translateY(-2px);
+  border-color: rgba(79, 70, 229, 0.5);
+}
+
+.dark .dashboard-card:hover {
+  border-color: #4f46e5;
 }
 
 /* Sidebar styles */

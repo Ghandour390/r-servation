@@ -1,6 +1,10 @@
+'use client'
+
 import Link from 'next/link'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function Footer() {
+  const { t } = useTranslation()
   return (
     <footer className="bg-secondary border-t border-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -14,29 +18,29 @@ export default function Footer() {
               <span className="text-xl font-bold text-primary">EventHub</span>
             </Link>
             <p className="text-secondary max-w-md">
-              Discover and book amazing events in your area. From conferences to concerts, we make event booking simple and fast.
+              {t.footer.description}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
             <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-              Quick Links
+              {t.footer.quickLinks}
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/" className="text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  Home
+                  {t.footer.home}
                 </Link>
               </li>
               <li>
                 <Link href="/about" className="text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  About Us
+                  {t.footer.aboutUs}
                 </Link>
               </li>
               <li>
                 <Link href="/events" className="text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  Events
+                  {t.footer.events}
                 </Link>
               </li>
             </ul>
@@ -45,7 +49,7 @@ export default function Footer() {
           {/* Social Media */}
           <div>
             <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-              Follow Us
+              {t.footer.followUs}
             </h3>
             <div className="flex space-x-4">
               <a href="#" className="text-tertiary hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
@@ -72,7 +76,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-8 border-t border-primary">
           <p className="text-center text-tertiary">
-            © 2024 EventHub. All rights reserved.
+            {t.footer.copyright}
           </p>
         </div>
       </div>

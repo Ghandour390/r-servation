@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface DashboardCardProps {
     title: string
@@ -22,6 +23,8 @@ export default function DashboardCard({
     trend,
     className = '',
 }: DashboardCardProps) {
+    const { t } = useTranslation()
+
     return (
         <div className={`dashboard-card ${className}`}>
             <div className="flex items-center justify-between">
@@ -37,7 +40,7 @@ export default function DashboardCard({
                             <span className="mr-1">
                                 {trend.isPositive ? '↑' : '↓'}
                             </span>
-                            {trend.value}% from last month
+                            {trend.value}% {t.dashboard.admin?.fromLastMonth || 'from last month'}
                         </p>
                     )}
                 </div>

@@ -8,15 +8,19 @@ export class ReservationService {
   constructor(
     private reservationRepository: ReservationRepository,
     private eventRepository: EventRepository
-  ) {}
+  ) { }
 
   async create(userId: string, eventId: string): Promise<Reservation> {
-    const event = await this.eventRepository.findById(eventId);
+    const event = await this.eventRepository.findById(eventId, {
+      include: { reservations: true }
+    }) as any;
     if (!event) throw new NotFoundException('Event not found');
-    if (event.remainingPlaces <= 0) throw new BadRequestException('No places available');
+    if (event.status !== 'PUBLISHED') throw new BadRequestException('Event is not published');
+    if (event.reservations.length >= event.maxCapacity) throw new BadRequestException('No places available');
 
     const existing = await this.reservationRepository.findByUserAndEvent(userId, eventId);
     if (existing) throw new BadRequestException('Already reserved');
+
 
     const reservation = await this.reservationRepository.create({
       user: { connect: { id: userId } },
@@ -54,7 +58,7 @@ export class ReservationService {
     const reservation = await this.reservationRepository.findById(id);
     if (!reservation) throw new NotFoundException('Reservation not found');
     if (reservation.userId !== userId) throw new ForbiddenException('Not authorized');
-    
+
     const event = await this.eventRepository.findById(reservation.eventId);
     const updated = await this.reservationRepository.updateStatus(id, 'CANCELED' as ReservationStatus);
     await this.eventRepository.updateRemainingPlaces(reservation.eventId, event.remainingPlaces + 1);

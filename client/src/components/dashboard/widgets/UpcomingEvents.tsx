@@ -1,10 +1,15 @@
+'use client'
+
 import Link from 'next/link'
 import { DashboardStats } from '@/lib/actions/admin'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function UpcomingEvents({ stats }: { stats: DashboardStats }) {
+    const { t, language } = useTranslation()
+
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
@@ -15,9 +20,9 @@ export default function UpcomingEvents({ stats }: { stats: DashboardStats }) {
     return (
         <div className="dashboard-card">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-primary">Upcoming Events</h3>
+                <h3 className="text-lg font-semibold text-primary">{t.dashboard.statistics.upcomingEvents}</h3>
                 <Link href="/dashboard/admin/events" className="text-sm text-indigo-600 hover:underline">
-                    View All
+                    {t.common.viewAll}
                 </Link>
             </div>
             <div className="space-y-3">
@@ -35,12 +40,12 @@ export default function UpcomingEvents({ stats }: { stats: DashboardStats }) {
                                 <p className="text-sm font-medium text-primary">
                                     {event.remainingPlaces}/{event.maxCapacity}
                                 </p>
-                                <p className="text-xs text-tertiary">spots left</p>
+                                <p className="text-xs text-tertiary">{t.dashboard.statistics.spotsLeft}</p>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <p className="text-tertiary text-center py-4">No upcoming events</p>
+                    <p className="text-tertiary text-center py-4">{t.dashboard.statistics.noUpcomingEvents}</p>
                 )}
             </div>
         </div>

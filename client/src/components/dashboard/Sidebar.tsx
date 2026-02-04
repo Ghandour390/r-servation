@@ -11,6 +11,7 @@ import {
     Cog6ToothIcon,
     XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useTranslation } from '@/hooks/useTranslation'
 
 interface SidebarProps {
     role: 'ADMIN' | 'PARTICIPANT'
@@ -20,23 +21,38 @@ interface SidebarProps {
 
 export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) {
     const pathname = usePathname()
+    const { t } = useTranslation()
 
     const adminLinks = [
-        { name: 'Overview', href: '/dashboard/admin', icon: HomeIcon },
-        { name: 'Events', href: '/dashboard/admin/events', icon: CalendarDaysIcon },
-        { name: 'Reservations', href: '/dashboard/admin/reservations', icon: TicketIcon },
-        { name: 'Statistics', href: '/dashboard/admin/statistics', icon: ChartBarIcon },
-        { name: 'Export Data', href: '/dashboard/admin/export', icon: ArrowDownTrayIcon },
+        { name: t.sidebar.dashboard, href: '/dashboard/admin', icon: HomeIcon },
+        { name: t.sidebar.events, href: '/dashboard/admin/events', icon: CalendarDaysIcon },
+        { name: t.sidebar.reservations, href: '/dashboard/admin/reservations', icon: TicketIcon },
+        { name: t.sidebar.statistics, href: '/dashboard/admin/statistics', icon: ChartBarIcon },
+        { name: t.sidebar.export, href: '/dashboard/admin/export', icon: ArrowDownTrayIcon },
     ]
 
     const participantLinks = [
-        { name: 'Overview', href: '/dashboard/participant', icon: HomeIcon },
-        { name: 'My Reservations', href: '/dashboard/participant/reservations', icon: TicketIcon },
-        { name: 'Browse Events', href: '/events', icon: CalendarDaysIcon },
+        { name: t.sidebar.dashboard, href: '/dashboard/participant', icon: HomeIcon },
+        { name: t.sidebar.reservations, href: '/dashboard/participant/reservations', icon: TicketIcon },
+        { name: t.sidebar.events, href: '/sidebar/events', icon: CalendarDaysIcon }, // Note: Need to check if 'Browse Events' maps to 'events' or new key
+    ]
+    // Fix for participant "Browse Events" -> let's map it to t.sidebar.events for now or add "browseEvents" key if needed.
+    // Based on dictionary, we have 'events'. Let's use 'events' for simplicity or stick to hardcoded if distinct.
+    // Let's assume 'Events' is close enough or use a new key?
+    // In dictionary: events: "Events", "Événements", "الفعاليات"
+    // Original was "Browse Events". Let's stick strictly to dictionary or simple match.
+    // Let's use `t.sidebar.events` for "Browse Events" contextually or update dictionary later. 
+    // Actually, looking at dictionary, I don't have "browseEvents". I'll use `t.sidebar.events` and maybe update dictionary later if user wants specific text.
+
+    // Updating participantLinks with correct keys
+    const participantLinksRefined = [
+        { name: t.sidebar.dashboard, href: '/dashboard/participant', icon: HomeIcon },
+        { name: t.sidebar.reservations, href: '/dashboard/participant/reservations', icon: TicketIcon },
+        { name: t.sidebar.events, href: '/events', icon: CalendarDaysIcon },
     ]
 
-    const links = role === 'ADMIN' ? adminLinks : participantLinks
-    const dashboardTitle = role === 'ADMIN' ? 'Admin Dashboard' : 'My Dashboard'
+    const navigation = role === 'ADMIN' ? adminLinks : participantLinksRefined
+    const dashboardTitleTranslated = t.sidebar.dashboard
 
     const isActive = (href: string) => {
         if (href === '/dashboard/admin' || href === '/dashboard/participant') {
@@ -63,7 +79,7 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
       `}>
                 {/* Header */}
                 <div className="flex items-center justify-between h-16 px-6 border-b border-primary">
-                    <h2 className="text-lg font-bold text-primary">{dashboardTitle}</h2>
+                    <h2 className="text-lg font-bold text-primary">{dashboardTitleTranslated}</h2>
                     <button
                         onClick={onClose}
                         className="lg:hidden p-2 text-tertiary hover:text-secondary"
@@ -74,13 +90,13 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
 
                 {/* Navigation */}
                 <nav className="p-4 space-y-1">
-                    {links.map((link) => {
+                    {navigation.map((link) => {
                         const Icon = link.icon
                         const active = isActive(link.href)
 
                         return (
                             <Link
-                                key={link.name}
+                                key={link.href}
                                 href={link.href}
                                 onClick={onClose}
                                 className={`
@@ -106,7 +122,7 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
                         className="flex items-center space-x-3 px-4 py-3 text-secondary hover:text-primary rounded-lg hover:bg-secondary transition-colors"
                     >
                         <HomeIcon className="h-5 w-5" />
-                        <span className="font-medium">Back to Home</span>
+                        <span className="font-medium">{t.sidebar.backToHome}</span>
                     </Link>
                 </div>
             </aside>

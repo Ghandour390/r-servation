@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { setUser } from "@/lib/redux/slices/authSlice";
 import axiosInstance from "@/lib/axios";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +25,7 @@ export default function LoginPage() {
       console.log('📤 Sending login request...');
       const response = await axiosInstance.post('/auth/login', { email, password });
       console.log('✅ Response received:', response.data);
-      
+
       const data = response.data.data || response.data; // Handle both formats
       const userData = data.user;
       const access_token = data.access_token;
@@ -38,28 +40,28 @@ export default function LoginPage() {
 
       if (userData && access_token && refresh_token) {
         console.log('💾 Storing in localStorage...');
-        
+
         // Store directly in localStorage FIRST before dispatch
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('access_token', access_token);
         localStorage.setItem('refresh_token', refresh_token);
-        
+
         console.log('✅ Data stored in localStorage');
-        
+
         // Then dispatch to Redux
         dispatch(setUser({
           user: userData,
           accessToken: access_token,
           refreshToken: refresh_token
         }));
-        
+
         console.log('✅ Data stored in Redux');
         console.log('Check localStorage:', {
           token: localStorage.getItem('access_token')?.substring(0, 20),
           refresh: localStorage.getItem('refresh_token')?.substring(0, 20),
           user: localStorage.getItem('user')?.substring(0, 50)
         });
-        
+
         console.log('🔄 Redirecting...');
         // Small delay to ensure storage is complete
         setTimeout(() => {
@@ -67,11 +69,11 @@ export default function LoginPage() {
         }, 100);
       } else {
         console.error('❌ Missing data in response');
-        setError('Invalid response from server');
+        setError(t.auth.errorGeneric);
       }
     } catch (err: any) {
       console.error('❌ Login error:', err.response?.data || err.message);
-      setError(err.response?.data?.message || "Email ou mot de passe incorrect");
+      setError(err.response?.data?.message || t.auth.errorLogin);
     } finally {
       setLoading(false);
     }
@@ -82,7 +84,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="card p-8">
           <h1 className="text-3xl font-bold text-primary text-center mb-8">
-            Sign in to your account
+            {t.auth.loginTitle}
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -94,7 +96,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
-                Email
+                {t.auth.emailLabel}
               </label>
               <input
                 id="email"
@@ -102,14 +104,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter your email"
+                placeholder={t.auth.emailPlaceholder}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-secondary mb-2">
-                Password
+                {t.auth.passwordLabel}
               </label>
               <div className="relative">
                 <input
@@ -118,7 +120,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  placeholder={t.auth.passwordPlaceholder}
                   required
                 />
                 <button
@@ -136,14 +138,14 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Connexion..." : "Continue"}
+              {loading ? t.auth.loginLoading : t.auth.loginButton}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-tertiary">
-            Don't have an account?{" "}
+            {t.auth.noAccount}{" "}
             <Link href="/register" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
-              Sign up
+              {t.auth.signUp}
             </Link>
           </p>
         </div>

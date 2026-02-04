@@ -1,9 +1,11 @@
+import Link from 'next/link'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ReduxProvider } from '@/lib/redux/ReduxProvider'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import ClientDirectionWrapper from '@/components/ClientDirectionWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,11 +27,13 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider>
           <ReduxProvider>
-            <div className="min-h-screen bg-primary transition-colors">
-              <Navbar />
-              <main>{children}</main>
-              <Footer />
-            </div>
+            <ClientDirectionWrapper>
+              <div className="min-h-screen bg-primary transition-colors">
+                <Navbar />
+                <main>{children}</main>
+                <Footer />
+              </div>
+            </ClientDirectionWrapper>
           </ReduxProvider>
         </ThemeProvider>
       </body>

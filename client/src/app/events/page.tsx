@@ -4,35 +4,82 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { CalendarDaysIcon, MapPinIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { getPublicEventsAction, Event } from '@/lib/actions/events'
+import { createReservationAction, getMyReservationsAction } from '@/lib/actions/reservations'
+import { useTranslation } from '@/hooks/useTranslation'
+import { useAppSelector } from '@/lib/redux/hooks'
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
+  const [myEventIds, setMyEventIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
+  const [reservingId, setReservingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { t, language } = useTranslation()
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+
+  const fetchEvents = async () => {
+    try {
+      const result = await getPublicEventsAction()
+      if (result.success && result.data) {
+        setEvents(result.data)
+      } else {
+        setError(result.error || t.eventsPage.errorLoading)
+      }
+    } catch (err) {
+      setError(t.eventsPage.errorLoading)
+      console.error('Error fetching events:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchMyReservations = async () => {
+    if (!isAuthenticated || user?.role !== 'PARTICIPANT') return
+    try {
+      const result = await getMyReservationsAction()
+      if (result.success && result.data) {
+        const ids = new Set(result.data.map(r => r.eventId))
+        setMyEventIds(ids)
+      }
+    } catch (err) {
+      console.error('Error fetching my reservations:', err)
+    }
+  }
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const result = await getPublicEventsAction()
-        if (result.success && result.data) {
-          setEvents(result.data)
-        } else {
-          setError(result.error || 'Failed to load events')
-        }
-      } catch (err) {
-        setError('Failed to load events')
-        console.error('Error fetching events:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchEvents()
   }, [])
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMyReservations()
+    }
+  }, [isAuthenticated, user?.role])
+
+  const handleReserve = async (eventId: string) => {
+    if (!isAuthenticated) return
+
+    setReservingId(eventId)
+    try {
+      const result = await createReservationAction(eventId)
+      if (result.success) {
+        alert(t.eventsPage.reservationSuccess)
+        setMyEventIds(prev => new Set([...prev, eventId]))
+        // Refresh events to update remaining places
+        fetchEvents()
+      } else {
+        alert(result.error || t.common.error)
+      }
+    } catch (err) {
+      alert(t.common.error)
+    } finally {
+      setReservingId(null)
+    }
+  }
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
       weekday: 'short',
       year: 'numeric',
       month: 'short',
@@ -42,7 +89,7 @@ export default function EventsPage() {
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', {
       hour: '2-digit',
       minute: '2-digit',
     })
@@ -67,14 +114,14 @@ export default function EventsPage() {
       <div className="pt-16 min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Oops! Something went wrong
+            {t.common.error}
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-8">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            Try Again
+            {t.eventsPage.tryAgain}
           </button>
         </div>
       </div>
@@ -88,10 +135,10 @@ export default function EventsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">
-              Discover <span className="text-indigo-600 dark:text-indigo-400">Events</span>
+              {t.eventsPage.title} <span className="text-indigo-600 dark:text-indigo-400">{t.sidebar.events}</span>
             </h1>
             <p className="text-xl text-secondary max-w-2xl mx-auto">
-              Find amazing events happening near you. From conferences to concerts, there's something for everyone.
+              {t.eventsPage.subtitle}
             </p>
           </div>
         </div>
@@ -104,64 +151,98 @@ export default function EventsPage() {
             <div className="text-center py-20">
               <CalendarDaysIcon className="h-16 w-16 text-tertiary mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-primary mb-2">
-                No events found
+                {t.eventsPage.noEventsTitle}
               </h3>
               <p className="text-secondary">
-                Check back later for new events or try refreshing the page.
+                {t.eventsPage.noEventsDesc}
               </p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {events.map((event) => (
-                <div key={event.id} className="card overflow-hidden">
-                  {/* Event Image Placeholder */}
-                  <div className="h-48 bg-gradient-to-br from-indigo-400 to-emerald-400 relative">
-                    <div className="absolute top-4 left-4">
-                      <span className={event.status === 'PUBLISHED' ? 'badge-published' : 'badge-draft'}>
-                        {event.status}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-4 right-4 bg-primary/90 backdrop-blur-sm rounded-lg px-3 py-2">
-                      <div className="text-orange-600 dark:text-orange-400 font-bold text-sm">
-                        {formatDate(event.dateTime)}
+              {events.map((event) => {
+                const isReserved = myEventIds.has(event.id)
+                const isParticipant = isAuthenticated && user?.role === 'PARTICIPANT'
+                const canReserve = isParticipant && !isReserved && event.remainingPlaces > 0
+
+                return (
+                  <div key={event.id} className="card overflow-hidden">
+                    {/* Event Image Placeholder */}
+                    <div className="h-48 bg-gradient-to-br from-indigo-400 to-emerald-400 relative">
+                      <div className="absolute top-4 left-4">
+                        <span className={event.status === 'PUBLISHED' ? 'badge-published' : 'badge-draft'}>
+                          {event.status}
+                        </span>
                       </div>
-                      <div className="text-secondary text-xs">
-                        {formatTime(event.dateTime)}
+                      <div className="absolute bottom-4 right-4 bg-primary/90 backdrop-blur-sm rounded-lg px-3 py-2">
+                        <div className="text-orange-600 dark:text-orange-400 font-bold text-sm">
+                          {formatDate(event.dateTime)}
+                        </div>
+                        <div className="text-secondary text-xs">
+                          {formatTime(event.dateTime)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Event Content */}
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-primary mb-2 line-clamp-2">
+                        {event.title}
+                      </h3>
+                      <p className="text-secondary mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+
+                      <div className="space-y-2 mb-6">
+                        <div className="flex items-center text-sm text-tertiary">
+                          <MapPinIcon className="h-4 w-4 mr-2" />
+                          {event.location}
+                        </div>
+                        <div className="flex items-center text-sm text-tertiary">
+                          <UsersIcon className="h-4 w-4 mr-2" />
+                          {event.remainingPlaces} / {event.maxCapacity} {t.eventsPage.spotsAvailable}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                            {t.eventsPage.free}
+                          </div>
+                          <Link href={`/events/${event.id}`} className="text-indigo-600 hover:underline text-sm font-medium">
+                            {t.eventsPage.viewDetails}
+                          </Link>
+                        </div>
+
+                        {isParticipant && (
+                          <button
+                            onClick={() => handleReserve(event.id)}
+                            disabled={!canReserve || reservingId === event.id}
+                            className={`w-full py-3 rounded-xl font-bold transition-all duration-200 ${isReserved
+                              ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 cursor-default'
+                              : event.remainingPlaces <= 0
+                                ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
+                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50'
+                              }`}
+                          >
+                            {reservingId === event.id ? (
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <span>{t.common.loading}</span>
+                              </div>
+                            ) : isReserved ? (
+                              t.eventsPage.alreadyReserved
+                            ) : event.remainingPlaces <= 0 ? (
+                              t.eventsPage.soldOut
+                            ) : (
+                              t.eventsPage.reserve
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
-
-                  {/* Event Content */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-primary mb-2 line-clamp-2">
-                      {event.title}
-                    </h3>
-                    <p className="text-secondary mb-4 line-clamp-2">
-                      {event.description}
-                    </p>
-
-                    <div className="space-y-2 mb-6">
-                      <div className="flex items-center text-sm text-tertiary">
-                        <MapPinIcon className="h-4 w-4 mr-2" />
-                        {event.location}
-                      </div>
-                      <div className="flex items-center text-sm text-tertiary">
-                        <UsersIcon className="h-4 w-4 mr-2" />
-                        {event.remainingPlaces} / {event.maxCapacity} spots available
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                        Free
-                      </div>
-                      <Link href={`/events/${event.id}`} className="btn-primary text-sm">
-                        View Details
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

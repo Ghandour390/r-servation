@@ -7,8 +7,11 @@ import { Bars3Icon, XMarkIcon, SunIcon, MoonIcon, UserCircleIcon } from '@heroic
 import { useTheme } from 'next-themes'
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks'
 import { loadUser, clearUser } from '@/lib/redux/slices/authSlice'
+import LanguageSwitcher from './LanguageSwitcher'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function Navbar() {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const pathname = usePathname()
@@ -25,11 +28,11 @@ export default function Navbar() {
   }
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'About Us', href: '/about' },
-    { name: 'Events', href: '/events' },
+    { name: t.navbar.home, href: '/' },
+    { name: t.navbar.about, href: '/about' },
+    { name: t.navbar.events, href: '/events' },
   ]
-   console.log('user',user)
+  console.log('user', user)
   const isActive = (path: string) => pathname === path
 
   return (
@@ -48,11 +51,10 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
-                className={`nav-link ${
-                  isActive(item.href) ? 'active' : ''
-                }`}
+                className={`nav-link ${isActive(item.href) ? 'active' : ''
+                  }`}
               >
                 {item.name}
               </Link>
@@ -60,27 +62,26 @@ export default function Navbar() {
             {isAuthenticated && user?.role === 'ADMIN' && (
               <Link
                 href="/dashboard/admin"
-                className={`nav-link ${
-                  isActive('/dashboard/admin') ? 'active' : ''
-                }`}
+                className={`nav-link ${isActive('/dashboard/admin') ? 'active' : ''
+                  }`}
               >
-                Dashboard
+                {t.navbar.dashboard}
               </Link>
             )}
             {isAuthenticated && user?.role === 'PARTICIPANT' && (
               <Link
                 href="/dashboard/participant"
-                className={`nav-link ${
-                  isActive('/dashboard/participant') ? 'active' : ''
-                }`}
+                className={`nav-link ${isActive('/dashboard/participant') ? 'active' : ''
+                  }`}
               >
-                Dashboard
+                {t.navbar.dashboard}
               </Link>
             )}
           </div>
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            <LanguageSwitcher />
             {/* Theme toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -92,7 +93,7 @@ export default function Navbar() {
                 <MoonIcon className="h-5 w-5" />
               )}
             </button>
-            
+
             {isLoaded && (
               isAuthenticated && user ? (
                 <div className="relative">
@@ -101,8 +102,8 @@ export default function Navbar() {
                     className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
                   >
                     {user.photo ? (
-                      <img 
-                        src={user.photo} 
+                      <img
+                        src={user.photo}
                         alt={user.firstName}
                         className="w-8 h-8 rounded-full"
                       />
@@ -111,7 +112,7 @@ export default function Navbar() {
                     )}
                     <span className="text-secondary">{user.firstName}</span>
                   </button>
-                  
+
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-primary border border-primary rounded-lg shadow-lg py-1 z-50">
                       <Link
@@ -119,20 +120,20 @@ export default function Navbar() {
                         className="block px-4 py-2 text-secondary hover:bg-secondary"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        Profile
+                        {t.navbar.profile}
                       </Link>
                       <Link
                         href="/my-events"
                         className="block px-4 py-2 text-secondary hover:bg-secondary"
                         onClick={() => setShowUserMenu(false)}
                       >
-                        My Events
+                        {t.navbar.myEvents}
                       </Link>
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-red-500 hover:bg-secondary"
                       >
-                        Logout
+                        {t.navbar.logout}
                       </button>
                     </div>
                   )}
@@ -140,10 +141,10 @@ export default function Navbar() {
               ) : (
                 <>
                   <Link href="/login" className="btn-outline">
-                    Login
+                    {t.navbar.login}
                   </Link>
                   <Link href="/register" className="btn-primary">
-                    Register
+                    {t.navbar.register}
                   </Link>
                 </>
               )
@@ -181,13 +182,12 @@ export default function Navbar() {
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
-                  className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${
-                    isActive(item.href)
-                      ? 'text-indigo-600 dark:text-indigo-400 bg-secondary'
-                      : 'text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-secondary'
-                  }`}
+                  className={`block px-3 py-2 text-base font-medium rounded-md transition-colors ${isActive(item.href)
+                    ? 'text-indigo-600 dark:text-indigo-400 bg-secondary'
+                    : 'text-secondary hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-secondary'
+                    }`}
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
@@ -199,8 +199,8 @@ export default function Navbar() {
                     <>
                       <div className="px-3 py-2 flex items-center space-x-2">
                         {user.photo ? (
-                          <img 
-                            src={user.photo} 
+                          <img
+                            src={user.photo}
                             alt={user.firstName}
                             className="w-8 h-8 rounded-full"
                           />
@@ -216,14 +216,14 @@ export default function Navbar() {
                         className="block px-3 py-2 text-base font-medium text-secondary hover:bg-secondary rounded-md"
                         onClick={() => setIsOpen(false)}
                       >
-                        Profile
+                        {t.navbar.profile}
                       </Link>
                       <Link
                         href="/my-events"
                         className="block px-3 py-2 text-base font-medium text-secondary hover:bg-secondary rounded-md"
                         onClick={() => setIsOpen(false)}
                       >
-                        My Events
+                        {t.navbar.myEvents}
                       </Link>
                       <button
                         onClick={() => {
@@ -232,7 +232,7 @@ export default function Navbar() {
                         }}
                         className="w-full text-left px-3 py-2 text-base font-medium text-red-500 hover:bg-secondary rounded-md"
                       >
-                        Logout
+                        {t.navbar.logout}
                       </button>
                     </>
                   ) : (
@@ -242,14 +242,14 @@ export default function Navbar() {
                         className="block px-3 py-2 text-base font-medium text-indigo-600 dark:text-indigo-400 hover:bg-secondary rounded-md"
                         onClick={() => setIsOpen(false)}
                       >
-                        Login
+                        {t.navbar.login}
                       </Link>
                       <Link
                         href="/register"
                         className="block px-3 py-2 mt-2 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
                         onClick={() => setIsOpen(false)}
                       >
-                        Register
+                        {t.navbar.register}
                       </Link>
                     </>
                   )

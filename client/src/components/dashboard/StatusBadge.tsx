@@ -1,11 +1,15 @@
 'use client'
 
+import { useTranslation } from '@/hooks/useTranslation'
+
 interface StatusBadgeProps {
     status: string
     type?: 'event' | 'reservation'
 }
 
 export default function StatusBadge({ status, type = 'reservation' }: StatusBadgeProps) {
+    const { t } = useTranslation()
+
     const getStatusClasses = () => {
         const normalizedStatus = status.toUpperCase()
 
@@ -19,7 +23,8 @@ export default function StatusBadge({ status, type = 'reservation' }: StatusBadg
             case 'PENDING':
                 return 'badge-pending'
             case 'CANCELED':
-            case 'CANCELED':
+            case 'CANCELLED':
+                return 'badge-canceled'
             case 'REFUSED':
                 return 'badge-canceled'
             default:
@@ -32,18 +37,18 @@ export default function StatusBadge({ status, type = 'reservation' }: StatusBadg
 
         switch (normalizedStatus) {
             case 'PUBLISHED':
-                return 'Published'
+                return t.common.status.published
             case 'DRAFT':
-                return 'Draft'
+                return t.common.status.draft
             case 'CONFIRMED':
-                return 'Confirmed'
+                return t.common.status.confirmed
             case 'PENDING':
-                return 'Pending'
+                return t.common.status.pending
             case 'CANCELED':
-            case 'CANCELED':
-                return 'Cancelled'
+            case 'CANCELLED':
+                return t.common.status.cancelled
             case 'REFUSED':
-                return 'Refused'
+                return t.common.status.refused
             default:
                 return status
         }

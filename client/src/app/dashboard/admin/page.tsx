@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
 import DashboardLoading from '@/components/loading/DashboardLoading'
 import { getStatisticsAction, DashboardStats } from '@/lib/actions/admin'
+import { useTranslation } from '@/hooks/useTranslation'
 
 // Lazy load widgets
 const StatsCards = lazy(() => import('@/components/dashboard/widgets/StatsCards'))
@@ -24,6 +25,7 @@ const WidgetSkeleton = () => (
 )
 
 export default function AdminDashboardPage() {
+    const { t } = useTranslation()
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -35,10 +37,10 @@ export default function AdminDashboardPage() {
                 if (result.success && result.data) {
                     setStats(result.data)
                 } else {
-                    setError(result.error || 'Failed to load statistics')
+                    setError(result.error || t.common.error)
                 }
             } catch (err) {
-                setError('Failed to load statistics')
+                setError(t.common.error)
                 console.error('Error fetching stats:', err)
             } finally {
                 setLoading(false)
@@ -46,7 +48,7 @@ export default function AdminDashboardPage() {
         }
 
         fetchStats()
-    }, [])
+    }, [t.common.error])
 
     if (loading) {
         return <DashboardLoading />
@@ -60,7 +62,7 @@ export default function AdminDashboardPage() {
                     onClick={() => window.location.reload()}
                     className="mt-4 btn-primary"
                 >
-                    Try Again
+                    {t.common.tryAgain}
                 </button>
             </div>
         )
@@ -70,8 +72,8 @@ export default function AdminDashboardPage() {
         <div className="space-y-6">
             {/* Page Header */}
             <div>
-                <h1 className="text-2xl font-bold text-primary">Dashboard Overview</h1>
-                <p className="text-secondary">Welcome back! Here's what's happening with your events.</p>
+                <h1 className="text-2xl font-bold text-primary">{t.dashboard.admin.title}</h1>
+                <p className="text-secondary">{t.dashboard.admin.subtitle}</p>
             </div>
 
             {/* Stats Cards */}

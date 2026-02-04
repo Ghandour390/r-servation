@@ -14,11 +14,13 @@ import { getEventByIdAction, Event } from '@/lib/actions/events'
 import { createReservationAction } from '@/lib/actions/reservations'
 import { useAppSelector } from '@/lib/redux/hooks'
 import ConfirmModal from '@/components/dashboard/ConfirmModal'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function EventDetailPage() {
     const params = useParams()
     const router = useRouter()
     const eventId = params.id as string
+    const { t, language } = useTranslation()
 
     const { isAuthenticated, user } = useAppSelector((state) => state.auth)
 
@@ -36,10 +38,10 @@ export default function EventDetailPage() {
                 if (result.success && result.data) {
                     setEvent(result.data)
                 } else {
-                    setError(result.error || 'Event not found')
+                    setError(result.error || t.eventsPage.noEventsTitle)
                 }
             } catch (err) {
-                setError('Failed to load event')
+                setError(t.eventsPage.errorLoading)
             } finally {
                 setLoading(false)
             }
@@ -48,7 +50,7 @@ export default function EventDetailPage() {
         if (eventId) {
             fetchEvent()
         }
-    }, [eventId])
+    }, [eventId, t])
 
     const handleReserve = async () => {
         if (!isAuthenticated) {
@@ -60,17 +62,17 @@ export default function EventDetailPage() {
         try {
             const result = await createReservationAction(eventId)
             if (result.success) {
-                setSuccessMessage('Reservation created successfully! Check your dashboard for updates.')
+                setSuccessMessage(t.eventsPage.reservationSuccess)
                 setReserveModal(false)
                 // Update remaining places
                 if (event) {
                     setEvent({ ...event, remainingPlaces: event.remainingPlaces - 1 })
                 }
             } else {
-                alert(result.error || 'Failed to create reservation')
+                alert(result.error || t.common.error)
             }
         } catch (err) {
-            alert('Failed to create reservation')
+            alert(t.common.error)
         } finally {
             setReserving(false)
         }
@@ -78,7 +80,7 @@ export default function EventDetailPage() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -88,7 +90,7 @@ export default function EventDetailPage() {
 
     const formatTime = (dateString: string) => {
         const date = new Date(dateString)
-        return date.toLocaleTimeString('en-US', {
+        return date.toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', {
             hour: '2-digit',
             minute: '2-digit',
         })
@@ -112,10 +114,10 @@ export default function EventDetailPage() {
         return (
             <div className="pt-16 min-h-screen bg-primary flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-primary mb-4">Event Not Found</h2>
-                    <p className="text-secondary mb-6">{error || 'The event you\'re looking for doesn\'t exist.'}</p>
+                    <h2 className="text-2xl font-bold text-primary mb-4">{t.common.error}</h2>
+                    <p className="text-secondary mb-6">{error || t.eventsPage.noEventsDesc}</p>
                     <Link href="/events" className="btn-primary">
-                        Browse Events
+                        {t.eventsPage.browseEvents}
                     </Link>
                 </div>
             </div>
@@ -124,6 +126,8 @@ export default function EventDetailPage() {
 
     const isEventPast = new Date(event.dateTime) < new Date()
     const isSoldOut = event.remainingPlaces <= 0
+    const isParticipant = isAuthenticated && user?.role === 'PARTICIPANT'
+    // const isAdmin       = isAuthentificated && user?.role ==='ADMIN'
 
     return (
         <div className="pt-16 min-h-screen bg-primary">
@@ -134,7 +138,7 @@ export default function EventDetailPage() {
                     className="inline-flex items-center text-secondary hover:text-primary mb-6 transition-colors"
                 >
                     <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                    Back to Events
+                    {t.sidebar.backToHome}
                 </Link>
 
                 {/* Success Message */}
@@ -145,7 +149,7 @@ export default function EventDetailPage() {
                             href="/dashboard/participant/reservations"
                             className="underline ml-2"
                         >
-                            View My Reservations
+                            {t.participant.myReservations}
                         </Link>
                     </div>
                 )}
@@ -170,7 +174,7 @@ export default function EventDetailPage() {
 
                         {/* Event Details */}
                         <div className="dashboard-card space-y-4">
-                            <h3 className="font-semibold text-primary">Event Details</h3>
+                            <h3 className="font-semibold text-primary">{t.eventsPage.viewDetails}</h3>
 
                             <div className="flex items-center text-secondary">
                                 <CalendarDaysIcon className="h-5 w-5 mr-3 text-indigo-500" />
@@ -188,7 +192,7 @@ export default function EventDetailPage() {
                             <div className="flex items-center text-secondary">
                                 <UsersIcon className="h-5 w-5 mr-3 text-indigo-500" />
                                 <p>
-                                    <span className="font-medium">{event.remainingPlaces}</span> of {event.maxCapacity} spots available
+                                    <span className="font-medium">{event.remainingPlaces}</span> / {event.maxCapacity} {t.eventsPage.spotsAvailable}
                                 </p>
                             </div>
                         </div>
@@ -198,35 +202,40 @@ export default function EventDetailPage() {
                     <div className="md:col-span-1">
                         <div className="dashboard-card sticky top-24">
                             <div className="text-center mb-6">
-                                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">Free</p>
-                                <p className="text-sm text-tertiary">Entry</p>
+                                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{t.eventsPage.free}</p>
                             </div>
 
                             {isEventPast ? (
                                 <div className="text-center py-4">
-                                    <p className="text-tertiary">This event has ended</p>
+                                    <p className="text-tertiary">{t.dashboard.statistics.noUpcomingEvents}</p>
                                 </div>
                             ) : isSoldOut ? (
                                 <div className="text-center py-4">
-                                    <p className="text-red-500 font-medium">Sold Out</p>
+                                    <p className="text-red-500 font-medium">{t.eventsPage.soldOut}</p>
                                 </div>
                             ) : successMessage ? (
                                 <div className="text-center py-4">
-                                    <p className="text-emerald-500 font-medium">Reserved! ✓</p>
+                                    <p className="text-emerald-500 font-medium">{t.common.status} ✓</p>
                                 </div>
-                            ) : (
+                            ) : isParticipant ? (
                                 <button
                                     onClick={() => setReserveModal(true)}
                                     className="btn-primary w-full flex items-center justify-center space-x-2"
                                 >
                                     <TicketIcon className="h-5 w-5" />
-                                    <span>Reserve Now</span>
+                                    <span>{t.eventsPage.reserve}</span>
                                 </button>
-                            )}
-
+                            ) : !isAuthenticated ? (
+                                <button
+                                    onClick={() => router.push(`/login?redirect=/events/${eventId}`)}
+                                    className="btn-outline w-full"
+                                >
+                                    {t.navbar.login}
+                                </button>
+                            ) :null }
                             <div className="mt-4 text-center">
                                 <p className="text-xs text-tertiary">
-                                    {event.remainingPlaces} spots left
+                                    {event.remainingPlaces} {t.dashboard.statistics.spotsLeft}
                                 </p>
                             </div>
                         </div>
@@ -239,11 +248,10 @@ export default function EventDetailPage() {
                 isOpen={reserveModal}
                 onClose={() => setReserveModal(false)}
                 onConfirm={handleReserve}
-                title="Confirm Reservation"
-                message={`Would you like to reserve a spot for "${event.title}"? ${!isAuthenticated ? 'You will need to log in first.' : ''
-                    }`}
-                confirmText="Reserve"
-                cancelText="Cancel"
+                title={t.eventsPage.reserve}
+                message={`${t.eventsPage.reserve} "${event.title}"?`}
+                confirmText={t.common.confirm}
+                cancelText={t.common.cancel}
                 variant="info"
                 isLoading={reserving}
             />

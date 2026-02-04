@@ -1,12 +1,17 @@
+'use client'
+
 import { DashboardStats } from '@/lib/actions/admin'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function EventStatusChart({ stats }: { stats: DashboardStats }) {
+    const { t } = useTranslation()
+
     return (
         <div className="dashboard-card">
-            <h3 className="text-lg font-semibold text-primary mb-4">Event Status</h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">{t.dashboard.statistics.eventStatistics}</h3>
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <span className="text-secondary">Published</span>
+                    <span className="text-secondary">{t.common.status.published}</span>
                     <div className="flex items-center space-x-2">
                         <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
                             <div
@@ -18,7 +23,7 @@ export default function EventStatusChart({ stats }: { stats: DashboardStats }) {
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
-                    <span className="text-secondary">Draft</span>
+                    <span className="text-secondary">{t.common.status.draft}</span>
                     <div className="flex items-center space-x-2">
                         <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
                             <div
@@ -30,7 +35,7 @@ export default function EventStatusChart({ stats }: { stats: DashboardStats }) {
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
-                    <span className="text-secondary">Cancelled</span>
+                    <span className="text-secondary">{t.common.status.cancelled}</span>
                     <div className="flex items-center space-x-2">
                         <div className="w-32 h-2 bg-secondary rounded-full overflow-hidden">
                             <div
