@@ -14,8 +14,10 @@ describe('ReservationService', () => {
     id: '1',
     title: 'Test Event',
     remainingPlaces: 10,
+    maxCapacity: 100,
     managerId: 'admin1',
     status: 'PUBLISHED' as EventStatus,
+    reservations: [],
   };
 
   const mockReservation = {

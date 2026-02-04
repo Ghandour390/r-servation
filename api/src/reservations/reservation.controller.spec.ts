@@ -26,7 +26,7 @@ describe('ReservationController', () => {
   };
 
   const mockRequest = {
-    user: { sub: 'user1' },
+    user: { id: 'user1' },
   };
 
   beforeEach(async () => {

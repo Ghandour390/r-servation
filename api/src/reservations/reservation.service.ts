@@ -16,7 +16,7 @@ export class ReservationService {
     }) as any;
     if (!event) throw new NotFoundException('Event not found');
     if (event.status !== 'PUBLISHED') throw new BadRequestException('Event is not published');
-    if (event.reservations.length >= event.maxCapacity) throw new BadRequestException('No places available');
+    if (event.remainingPlaces <= 0) throw new BadRequestException('No places available');
 
     const existing = await this.reservationRepository.findByUserAndEvent(userId, eventId);
     if (existing) throw new BadRequestException('Already reserved');
