@@ -33,6 +33,7 @@ describe('ReservationService', () => {
     findByUserId: jest.fn(),
     findMany: jest.fn(),
     updateStatus: jest.fn(),
+    delete: jest.fn(),
   };
 
   const mockEventRepository = {
@@ -58,10 +59,10 @@ describe('ReservationService', () => {
     mockEventRepository.findById.mockResolvedValue(mockEvent);
     mockReservationRepository.findByUserAndEvent.mockResolvedValue(null);
     mockReservationRepository.create.mockResolvedValue(mockReservation);
-    
+
     const result = await service.create('user1', '1');
     expect(result).toEqual(mockReservation);
-    expect(mockEventRepository.updateRemainingPlaces).toHaveBeenCalledWith('1', 9);
+    expect(mockEventRepository.updateRemainingPlaces).not.toHaveBeenCalled();
   });
 
   it('should throw BadRequestException when no places available', async () => {
@@ -75,12 +76,23 @@ describe('ReservationService', () => {
     await expect(service.create('user1', '1')).rejects.toThrow(BadRequestException);
   });
 
-  it('should cancel reservation', async () => {
-    mockReservationRepository.findById.mockResolvedValue(mockReservation);
-    mockReservationRepository.updateStatus.mockResolvedValue({ ...mockReservation, status: 'CANCELED' as ReservationStatus });
-    
-    const result = await service.cancel('1', 'user1');
-    expect(result.status).toBe('CANCELED');
+  it('should delete reservation and restore capacity if it was confirmed', async () => {
+    const confirmedReservation = { ...mockReservation, status: 'CONFIRMED' as ReservationStatus };
+    mockReservationRepository.findById.mockResolvedValue(confirmedReservation);
+    mockReservationRepository.delete.mockResolvedValue(confirmedReservation);
+
+    await service.delete('1', 'user1');
+    expect(mockReservationRepository.delete).toHaveBeenCalledWith('1');
     expect(mockEventRepository.updateRemainingPlaces).toHaveBeenCalledWith('1', 11);
+  });
+
+  it('should update status and decrease capacity if confirmed', async () => {
+    mockReservationRepository.findById.mockResolvedValue(mockReservation);
+    mockReservationRepository.updateStatus.mockResolvedValue({ ...mockReservation, status: 'CONFIRMED' as ReservationStatus });
+    mockEventRepository.findById.mockResolvedValue(mockEvent);
+
+    const result = await service.updateStatus('1', 'CONFIRMED', 'admin1');
+    expect(result.status).toBe('CONFIRMED');
+    expect(mockEventRepository.updateRemainingPlaces).toHaveBeenCalledWith('1', 9);
   });
 });

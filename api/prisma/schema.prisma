@@ -43,6 +43,7 @@ model User {
   firstName        String
   lastName         String
   isEmailVerified  Boolean       @default(false)
+  avatarUrl        String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   
@@ -64,6 +65,7 @@ model Event {
   price            Float?
   category         EventCategory?
   status           EventStatus   @default(DRAFT)
+  imageUrl         String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   

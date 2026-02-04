@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ReservationRepository } from './reservation.repository';
 import { EventRepository } from '../events/event.repository';
-import { Reservation, ReservationStatus } from '@prisma/client';
+import { Reservation, ReservationStatus, Prisma, EventCategory } from '@prisma/client';
 
 @Injectable()
 export class ReservationService {
@@ -27,12 +27,29 @@ export class ReservationService {
       event: { connect: { id: eventId } }
     });
 
-    await this.eventRepository.updateRemainingPlaces(eventId, event.remainingPlaces - 1);
+    // Do NOT update remainingPlaces here anymore. 
+    // It should only decrease when confirmed.
     return reservation;
   }
 
-  async findAll(): Promise<Reservation[]> {
+  async findAll(filters?: { search?: string; category?: EventCategory }): Promise<Reservation[]> {
+    const where: Prisma.ReservationWhereInput = {};
+
+    if (filters?.category) {
+      where.event = { category: filters.category };
+    }
+
+    if (filters?.search) {
+      where.OR = [
+        { event: { title: { contains: filters.search, mode: 'insensitive' } } },
+        { user: { firstName: { contains: filters.search, mode: 'insensitive' } } },
+        { user: { lastName: { contains: filters.search, mode: 'insensitive' } } },
+        { user: { email: { contains: filters.search, mode: 'insensitive' } } },
+      ];
+    }
+
     return this.reservationRepository.findMany({
+      where,
       include: { user: true, event: true }
     });
   }
@@ -51,17 +68,42 @@ export class ReservationService {
     const reservation = await this.reservationRepository.findById(id) as any;
     if (!reservation) throw new NotFoundException('Reservation not found');
     if (reservation.event.managerId !== userId) throw new ForbiddenException('Not authorized');
-    return this.reservationRepository.updateStatus(id, status);
+
+    const previousStatus = reservation.status;
+    const updated = await this.reservationRepository.updateStatus(id, status);
+
+    // Capacity Logic: Decrease remainingPlaces ONLY when moving to CONFIRMED
+    if (status === 'CONFIRMED' && previousStatus !== 'CONFIRMED') {
+      const event = await this.eventRepository.findById(reservation.eventId);
+      if (event) {
+        await this.eventRepository.updateRemainingPlaces(reservation.eventId, event.remainingPlaces - 1);
+      }
+    }
+
+    return updated;
   }
 
-  async cancel(id: string, userId: string): Promise<Reservation> {
-    const reservation = await this.reservationRepository.findById(id);
+  async delete(id: string, userId: string): Promise<Reservation> {
+    const reservation = await this.reservationRepository.findById(id) as any;
     if (!reservation) throw new NotFoundException('Reservation not found');
+
+    // Check if user is owner or admin (or event manager)
+    // For now, let's allow owner to delete (cancel)
     if (reservation.userId !== userId) throw new ForbiddenException('Not authorized');
 
-    const event = await this.eventRepository.findById(reservation.eventId);
-    const updated = await this.reservationRepository.updateStatus(id, 'CANCELED' as ReservationStatus);
-    await this.eventRepository.updateRemainingPlaces(reservation.eventId, event.remainingPlaces + 1);
-    return updated;
+    // Capacity Logic: If it was CONFIRMED, free up the spot
+    if (reservation.status === 'CONFIRMED') {
+      const event = await this.eventRepository.findById(reservation.eventId);
+      if (event) {
+        await this.eventRepository.updateRemainingPlaces(reservation.eventId, event.remainingPlaces + 1);
+      }
+    }
+
+    return this.reservationRepository.delete(id);
+  }
+
+  // Legacy cancel method - updating to use delete logic or retiring if needed
+  async cancel(id: string, userId: string): Promise<Reservation> {
+    return this.delete(id, userId);
   }
 }

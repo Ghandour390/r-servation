@@ -6,6 +6,7 @@ import DataTable from '@/components/dashboard/DataTable'
 import StatusBadge from '@/components/dashboard/StatusBadge'
 import ConfirmModal from '@/components/dashboard/ConfirmModal'
 import DashboardLoading from '@/components/loading/DashboardLoading'
+import FilterBar from '@/components/FilterBar'
 import {
     getAllReservationsAction,
     updateReservationStatusAction,
@@ -27,11 +28,12 @@ export default function AdminReservationsPage() {
         action: null,
     })
     const [actionLoading, setActionLoading] = useState(false)
+    const [filters, setFilters] = useState({ search: '', category: '' })
     const { t } = useTranslation()
 
-    const fetchReservations = async () => {
+    const fetchReservations = async (currentFilters = filters) => {
         try {
-            const result = await getAllReservationsAction()
+            const result = await getAllReservationsAction(currentFilters)
             if (result.success && result.data) {
                 setReservations(result.data)
             } else {
@@ -46,8 +48,8 @@ export default function AdminReservationsPage() {
     }
 
     useEffect(() => {
-        fetchReservations()
-    }, [t])
+        fetchReservations(filters)
+    }, [t, filters])
 
     const handleAction = async () => {
         if (!actionModal.reservation || !actionModal.action) return
@@ -223,14 +225,17 @@ export default function AdminReservationsPage() {
             )}
 
             {/* Reservations Table */}
-            <div className="dashboard-card !p-0 overflow-hidden">
-                <DataTable
-                    columns={columns}
-                    data={reservations}
-                    keyField="id"
-                    pageSize={10}
-                    emptyMessage={t.reservations.noReservations}
-                />
+            <div className="dashboard-card p-4">
+                <FilterBar onFilterChange={setFilters} t={t} />
+                <div className="!p-0 overflow-hidden">
+                    <DataTable
+                        columns={columns}
+                        data={reservations}
+                        keyField="id"
+                        pageSize={10}
+                        emptyMessage={t.reservations.noReservations}
+                    />
+                </div>
             </div>
 
             {/* Action Confirmation Modal */}

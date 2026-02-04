@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EventRepository } from './event.repository';
-import { Event, EventStatus, EventCategory } from '@prisma/client';
+import { Event, EventStatus, EventCategory, Prisma } from '@prisma/client';
 
 @Injectable()
 export class EventService {
@@ -15,6 +15,7 @@ export class EventService {
     price?: number;
     category?: EventCategory;
     managerId: string;
+    imageUrl?: string;
   }): Promise<Event> {
     const { managerId, ...eventData } = data;
     return this.eventRepository.create({
@@ -24,9 +25,24 @@ export class EventService {
     });
   }
 
-  async findAll(userRole?: string): Promise<Event[]> {
+  async findAll(userRole?: string, filters?: { search?: string; category?: EventCategory }): Promise<Event[]> {
+    const where: Prisma.EventWhereInput = {};
+
+    if (filters?.category) {
+      where.category = filters.category;
+    }
+
+    if (filters?.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+        { location: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
     if (userRole === 'ADMIN') {
       return this.eventRepository.findMany({
+        where,
         include: {
           manager: {
             select: { id: true, firstName: true, lastName: true, email: true }
@@ -39,6 +55,7 @@ export class EventService {
     }
 
     return this.eventRepository.findMany({
+      where,
       include: {
         manager: {
           select: { id: true, firstName: true, lastName: true, email: true }

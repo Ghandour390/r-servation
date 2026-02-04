@@ -12,7 +12,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  if (!isAuthPage && !accessToken && pathname !== '/') {
+  const publicPages = ['/', '/about', '/events'];
+  const isPublicPage = publicPages.some(page => pathname === page || pathname.startsWith(page + '/'));
+
+  if (!isPublicPage && !isAuthPage && !accessToken) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

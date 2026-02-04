@@ -30,17 +30,32 @@ export default function UpcomingEvents({ stats }: { stats: DashboardStats }) {
                     stats.upcomingEvents.map((event) => (
                         <div
                             key={event.id}
-                            className="flex items-center justify-between py-3 border-b border-primary last:border-0"
+                            className="flex items-center justify-between py-4 border-b border-primary last:border-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors px-2 rounded-lg"
                         >
-                            <div>
-                                <p className="text-sm font-medium text-primary">{event.title}</p>
-                                <p className="text-xs text-tertiary">{formatDate(event.dateTime)}</p>
+                            <div className="flex items-center space-x-3">
+                                <div className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden border border-primary shrink-0">
+                                    {event.imageUrl ? (
+                                        <img
+                                            src={event.imageUrl}
+                                            alt={event.title}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="h-full w-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                                            {event.title[0].toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-primary">{event.title}</p>
+                                    <p className="text-xs text-tertiary">{formatDate(event.dateTime)}</p>
+                                </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-sm font-medium text-primary">
+                                <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                                     {event.remainingPlaces}/{event.maxCapacity}
                                 </p>
-                                <p className="text-xs text-tertiary">{t.dashboard.statistics.spotsLeft}</p>
+                                <p className="text-[10px] text-tertiary uppercase tracking-wider">{t.dashboard.statistics.spotsLeft}</p>
                             </div>
                         </div>
                     ))

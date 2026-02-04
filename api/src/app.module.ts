@@ -10,6 +10,7 @@ import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { MinioModule } from './minio/minio.module';
 import { RedisModule } from './redis/redis.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RedisModule } from './redis/redis.module';
     PrismaModule,
     RedisModule,
     AuthModule,
+    UsersModule,
     EventsModule,
     ReservationsModule,
     AdminModule,

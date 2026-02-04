@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { createEventAction, CreateEventData } from '@/lib/actions/events'
 
@@ -17,6 +17,8 @@ export default function CreateEventPage() {
         location: '',
         maxCapacity: 100,
     })
+    const [image, setImage] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -24,14 +26,17 @@ export default function CreateEventPage() {
         setLoading(true)
 
         try {
-            // Convert datetime-local to ISO string
-            const dateTime = new Date(formData.dateTime).toISOString()
+            const submitData = new FormData()
+            submitData.append('title', formData.title)
+            submitData.append('description', formData.description)
+            submitData.append('dateTime', new Date(formData.dateTime).toISOString())
+            submitData.append('location', formData.location)
+            submitData.append('maxCapacity', formData.maxCapacity.toString())
+            if (image) {
+                submitData.append('image', image)
+            }
 
-            const result = await createEventAction({
-                ...formData,
-                dateTime,
-            })
-            console.log("create event", result);
+            const result = await createEventAction(submitData)
             if (result.success) {
                 router.push('/dashboard/admin/events')
             } else {
@@ -42,6 +47,23 @@ export default function CreateEventPage() {
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setImage(file)
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const removeImage = () => {
+        setImage(null)
+        setImagePreview(null)
     }
 
     const handleChange = (
@@ -156,6 +178,46 @@ export default function CreateEventPage() {
                         placeholder="Enter event location"
                         required
                     />
+                </div>
+
+                <div>
+                    <label className="form-label">Event Cover Image</label>
+                    <div className="mt-2">
+                        {imagePreview ? (
+                            <div className="relative aspect-video rounded-xl overflow-hidden border border-primary">
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={removeImage}
+                                    className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                                >
+                                    <XMarkIcon className="h-4 w-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="flex flex-col items-center justify-center aspect-video w-full border-2 border-dashed border-primary rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/5 transition-all">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <PhotoIcon className="h-10 w-10 text-tertiary mb-3" />
+                                    <p className="text-sm text-secondary">
+                                        <span className="font-bold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="text-xs text-tertiary mt-1">
+                                        Recommend: 16:9 Aspect Ratio (e.g. 1920x1080)
+                                    </p>
+                                </div>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                            </label>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-end space-x-4 pt-4">

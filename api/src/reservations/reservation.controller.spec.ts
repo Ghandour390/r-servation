@@ -22,7 +22,7 @@ describe('ReservationController', () => {
     findById: jest.fn(),
     findByUser: jest.fn(),
     updateStatus: jest.fn(),
-    cancel: jest.fn(),
+    delete: jest.fn(),
   };
 
   const mockRequest = {
@@ -63,9 +63,10 @@ describe('ReservationController', () => {
     expect(result.status).toBe('CONFIRMED');
   });
 
-  it('should cancel reservation', async () => {
-    mockService.cancel.mockResolvedValue({ ...mockReservation, status: 'CANCELED' as ReservationStatus });
-    const result = await controller.cancel('1', mockRequest);
-    expect(result.status).toBe('CANCELED');
+  it('should delete reservation', async () => {
+    mockService.delete.mockResolvedValue(mockReservation);
+    const result = await controller.delete('1', mockRequest);
+    expect(result).toEqual(mockReservation);
+    expect(mockService.delete).toHaveBeenCalledWith('1', 'user1');
   });
 });

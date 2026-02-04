@@ -31,22 +31,36 @@ export default function RecentReservations({ stats }: { stats: DashboardStats })
                     stats.recentReservations.map((reservation) => (
                         <div
                             key={reservation.id}
-                            className="flex items-center justify-between py-3 border-b border-primary last:border-0"
+                            className="flex items-center justify-between py-4 border-b border-primary last:border-0 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors px-2 rounded-lg"
                         >
                             <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
-                                    <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                                        {reservation.userName.charAt(0).toUpperCase()}
-                                    </span>
+                                <div className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden border border-primary shrink-0">
+                                    {reservation.eventImageUrl ? (
+                                        <img
+                                            src={reservation.eventImageUrl}
+                                            alt={reservation.eventTitle}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="h-full w-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold">
+                                            {reservation.eventTitle[0].toUpperCase()}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-primary">{reservation.userName}</p>
+                                    <p className="text-sm font-semibold text-primary">{reservation.userName}</p>
                                     <p className="text-xs text-tertiary">{reservation.eventTitle}</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <StatusBadge status={reservation.status} />
-                                <p className="text-xs text-tertiary mt-1">{formatDate(reservation.createdAt)}</p>
+                                <p className="text-xs text-tertiary mb-1">{formatDate(reservation.createdAt)}</p>
+                                <span className={
+                                    reservation.status === 'CONFIRMED'
+                                        ? 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                        : 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
+                                }>
+                                    {reservation.status}
+                                </span>
                             </div>
                         </div>
                     ))

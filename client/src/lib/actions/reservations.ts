@@ -48,9 +48,9 @@ export async function createReservationAction(eventId: string): Promise<Reservat
 }
 
 // Get all reservations (Admin only)
-export async function getAllReservationsAction(): Promise<ReservationsResponse> {
+export async function getAllReservationsAction(params?: { search?: string; category?: string }): Promise<ReservationsResponse> {
     try {
-        const response = await axiosInstance.get('/reservations')
+        const response = await axiosInstance.get('/reservations', { params })
         return { success: true, data: response.data.data || response.data }
     } catch (error: any) {
         console.error('Get all reservations error:', error.message)
@@ -104,7 +104,7 @@ export async function updateReservationStatusAction(
 // Cancel reservation
 export async function cancelReservationAction(id: string): Promise<ReservationResponse> {
     try {
-        const response = await axiosInstance.put(`/reservations/${id}/cancel`, {})
+        const response = await axiosInstance.delete(`/reservations/${id}`)
         return { success: true, data: response.data.data || response.data }
     } catch (error: any) {
         console.error('Cancel reservation error:', error.message)

@@ -17,6 +17,7 @@ export interface DashboardStats {
         id: string
         userName: string
         eventTitle: string
+        eventImageUrl?: string
         status: string
         createdAt: string
     }[]
@@ -26,6 +27,7 @@ export interface DashboardStats {
         dateTime: string
         remainingPlaces: number
         maxCapacity: number
+        imageUrl?: string
     }[]
 }
 

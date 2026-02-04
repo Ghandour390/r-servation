@@ -58,9 +58,7 @@ export default function ParticipantReservationsPage() {
             const result = await cancelReservationAction(cancelModal.reservation.id)
             if (result.success) {
                 setReservations(
-                    reservations.map((r) =>
-                        r.id === cancelModal.reservation?.id ? { ...r, status: 'CANCELED' as const } : r
-                    )
+                    reservations.filter((r) => r.id !== cancelModal.reservation?.id)
                 )
                 setCancelModal({ isOpen: false, reservation: null })
             } else {

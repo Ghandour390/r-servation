@@ -8,7 +8,8 @@ import {
     TrashIcon,
     EyeIcon,
     MegaphoneIcon,
-    XCircleIcon
+    XCircleIcon,
+    PhotoIcon
 } from '@heroicons/react/24/outline'
 import DataTable from '@/components/dashboard/DataTable'
 import StatusBadge from '@/components/dashboard/StatusBadge'
@@ -21,6 +22,8 @@ import {
     cancelEventAction,
     Event
 } from '@/lib/actions/events'
+import FilterBar from '@/components/FilterBar'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function AdminEventsPage() {
     const [events, setEvents] = useState<Event[]>([])
@@ -31,10 +34,12 @@ export default function AdminEventsPage() {
         event: null,
     })
     const [actionLoading, setActionLoading] = useState(false)
+    const [filters, setFilters] = useState({ search: '', category: '' })
+    const { t } = useTranslation()
 
-    const fetchEvents = async () => {
+    const fetchEvents = async (currentFilters = filters) => {
         try {
-            const result = await getEventsAction()
+            const result = await getEventsAction(currentFilters)
             if (result.success && result.data) {
                 setEvents(result.data)
             } else {
@@ -49,8 +54,8 @@ export default function AdminEventsPage() {
     }
 
     useEffect(() => {
-        fetchEvents()
-    }, [])
+        fetchEvents(filters)
+    }, [filters])
 
     const handleDelete = async () => {
         if (!deleteModal.event) return
@@ -118,9 +123,22 @@ export default function AdminEventsPage() {
             header: 'Event',
             sortable: true,
             render: (event: Event) => (
-                <div>
-                    <p className="font-medium text-primary">{event.title}</p>
-                    <p className="text-xs text-tertiary truncate max-w-xs">{event.location}</p>
+                <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden border border-primary shrink-0">
+                        {event.imageUrl ? (
+                            <img
+                                src={event.imageUrl}
+                                alt={event.title}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <PhotoIcon className="h-5 w-5 text-tertiary" />
+                        )}
+                    </div>
+                    <div>
+                        <p className="font-medium text-primary">{event.title}</p>
+                        <p className="text-xs text-tertiary truncate max-w-xs">{event.location}</p>
+                    </div>
                 </div>
             ),
         },
@@ -224,14 +242,17 @@ export default function AdminEventsPage() {
             )}
 
             {/* Events Table */}
-            <div className="dashboard-card p-0 overflow-hidden">
-                <DataTable
-                    columns={columns}
-                    data={events}
-                    keyField="id"
-                    pageSize={10}
-                    emptyMessage="No events found. Create your first event!"
-                />
+            <div className="dashboard-card p-4">
+                <FilterBar onFilterChange={setFilters} t={t} />
+                <div className="overflow-hidden">
+                    <DataTable
+                        columns={columns}
+                        data={events}
+                        keyField="id"
+                        pageSize={10}
+                        emptyMessage="No events found. Create your first event!"
+                    />
+                </div>
             </div>
 
             {/* Delete Confirmation Modal */}

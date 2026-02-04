@@ -9,7 +9,9 @@ import {
     ChartBarIcon,
     ArrowDownTrayIcon,
     Cog6ToothIcon,
-    XMarkIcon
+    XMarkIcon,
+    UserGroupIcon,
+    UserCircleIcon
 } from '@heroicons/react/24/outline'
 import { useTranslation } from '@/hooks/useTranslation'
 
@@ -27,6 +29,7 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
         { name: t.sidebar.dashboard, href: '/dashboard/admin', icon: HomeIcon },
         { name: t.sidebar.events, href: '/dashboard/admin/events', icon: CalendarDaysIcon },
         { name: t.sidebar.reservations, href: '/dashboard/admin/reservations', icon: TicketIcon },
+        { name: t.sidebar.users, href: '/dashboard/admin/users', icon: UserGroupIcon },
         { name: t.sidebar.statistics, href: '/dashboard/admin/statistics', icon: ChartBarIcon },
         { name: t.sidebar.export, href: '/dashboard/admin/export', icon: ArrowDownTrayIcon },
     ]
@@ -52,6 +55,11 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
     ]
 
     const navigation = role === 'ADMIN' ? adminLinks : participantLinksRefined
+    const commonNavigation = [
+        { name: t.navbar.profile, href: '/dashboard/profile', icon: UserCircleIcon },
+    ]
+
+    const fullNavigation = [...navigation, ...commonNavigation]
     const dashboardTitleTranslated = t.sidebar.dashboard
 
     const isActive = (href: string) => {
@@ -90,7 +98,7 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
 
                 {/* Navigation */}
                 <nav className="p-4 space-y-1">
-                    {navigation.map((link) => {
+                    {fullNavigation.map((link) => {
                         const Icon = link.icon
                         const active = isActive(link.href)
 

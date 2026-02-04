@@ -1,9 +1,10 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 
 @Injectable()
 export class MinioService implements OnModuleInit {
+  private readonly logger = new Logger(MinioService.name);
   private minioClient: Minio.Client;
   private bucketName: string;
 
@@ -19,15 +20,31 @@ export class MinioService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const bucketExists = await this.minioClient.bucketExists(this.bucketName);
-    if (!bucketExists) {
-      await this.minioClient.makeBucket(this.bucketName, 'us-east-1');
+    try {
+      const bucketExists = await this.minioClient.bucketExists(this.bucketName);
+      if (!bucketExists) {
+        this.logger.log(`Creating bucket: ${this.bucketName}`);
+        await this.minioClient.makeBucket(this.bucketName, 'us-east-1');
+      } else {
+        this.logger.log(`Bucket already exists: ${this.bucketName}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to connect to MinIO or check bucket: ${error.message}`);
     }
   }
 
   async uploadTicket(fileName: string, fileBuffer: Buffer): Promise<string> {
     await this.minioClient.putObject(this.bucketName, fileName, fileBuffer);
     return await this.minioClient.presignedGetObject(this.bucketName, fileName, 24 * 60 * 60); // 24h expiry
+  }
+
+  async uploadAvatar(fileName: string, fileBuffer: Buffer): Promise<string> {
+    await this.minioClient.putObject(this.bucketName, fileName, fileBuffer);
+    return await this.minioClient.presignedGetObject(this.bucketName, fileName, 7 * 24 * 60 * 60); // 7 days expiry
+  }
+
+  async getAvatarUrl(fileName: string): Promise<string> {
+    return await this.minioClient.presignedGetObject(this.bucketName, fileName, 7 * 24 * 60 * 60);
   }
 
   async getTicketUrl(fileName: string): Promise<string> {

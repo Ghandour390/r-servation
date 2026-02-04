@@ -1,10 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { EventController } from './event.controller';
 import { EventService } from './event.service';
+import { MinioService } from '../minio/minio.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
 
 describe('EventController', () => {
   let controller: EventController;
@@ -37,6 +36,10 @@ describe('EventController', () => {
     status: 'DRAFT',
   };
 
+  const mockMinioService = {
+    uploadAvatar: jest.fn().mockResolvedValue('http://minio/events/test.jpg'),
+  };
+
   const mockService = {
     create: jest.fn(),
     findAll: jest.fn(),
@@ -50,7 +53,10 @@ describe('EventController', () => {
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       controllers: [EventController],
-      providers: [{ provide: EventService, useValue: mockService }],
+      providers: [
+        { provide: EventService, useValue: mockService },
+        { provide: MinioService, useValue: mockMinioService },
+      ],
     })
       .overrideGuard(JwtAuthGuard)
       .useValue({ canActivate: () => true })
@@ -64,7 +70,7 @@ describe('EventController', () => {
 
   it('should create event', async () => {
     mockService.create.mockResolvedValue(mockEvent);
-    const result = await controller.create(mockEventDto, mockRequest);
+    const result = await controller.create(mockEventDto, null, mockRequest);
     expect(result).toEqual(mockEvent);
     expect(mockService.create).toHaveBeenCalled();
   });
@@ -83,7 +89,7 @@ describe('EventController', () => {
 
   it('should update event', async () => {
     mockService.update.mockResolvedValue(mockEvent);
-    const result = await controller.update('1', mockEventDto, mockRequest);
+    const result = await controller.update('1', mockEventDto, null, mockRequest);
     expect(result).toEqual(mockEvent);
   });
 

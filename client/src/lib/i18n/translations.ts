@@ -10,6 +10,7 @@ export const translations = {
             confirm: "Confirm",
             tryAgain: "Try Again",
             viewAll: "View All",
+            search: "Search...",
             status: {
                 published: "Published",
                 draft: "Draft",
@@ -109,6 +110,9 @@ export const translations = {
                 refuseBtn: "Refuse"
             }
         },
+        events: {
+            allCategories: "All Categories",
+        },
         export: {
             title: "Export Data",
             description: "Download your event and reservation data as CSV files",
@@ -200,7 +204,8 @@ export const translations = {
             alreadyReserved: "Already Reserved",
             reservationSuccess: "Reservation successful!",
             errorLoading: "Failed to load events",
-            tryAgain: "Try Again"
+            tryAgain: "Try Again",
+            searchPlaceholder: "Search events..."
         },
         participant: {
             myReservations: "My Reservations",
@@ -257,6 +262,7 @@ export const translations = {
             confirm: "Confirmer",
             tryAgain: "Réessayer",
             viewAll: "Tout voir",
+            search: "Rechercher...",
             status: {
                 published: "Publié",
                 draft: "Brouillon",
@@ -356,6 +362,9 @@ export const translations = {
                 refuseBtn: "Refuser"
             }
         },
+        events: {
+            allCategories: "Toutes les catégories",
+        },
         export: {
             title: "Exporter les données",
             description: "Téléchargez vos données d'événements et de réservations sous forme de fichiers CSV",
@@ -447,7 +456,8 @@ export const translations = {
             alreadyReserved: "Déjà réservé",
             reservationSuccess: "Réservation réussie !",
             errorLoading: "Échec du chargement des événements",
-            tryAgain: "Réessayer"
+            tryAgain: "Réessayer",
+            searchPlaceholder: "Rechercher des événements..."
         },
         participant: {
             myReservations: "Mes Réservations",
@@ -504,6 +514,7 @@ export const translations = {
             confirm: "تأكيد",
             tryAgain: "حاول مرة أخرى",
             viewAll: "عرض الكل",
+            search: "بحث...",
             status: {
                 published: "منشور",
                 draft: "مسودة",
@@ -603,6 +614,9 @@ export const translations = {
                 refuseBtn: "رفض"
             }
         },
+        events: {
+            allCategories: "جميع الفئات",
+        },
         export: {
             title: "تصدير البيانات",
             description: "تحميل بيانات الفعاليات والحجوزات كملفات CSV",
@@ -694,7 +708,8 @@ export const translations = {
             alreadyReserved: "محجوز بالفعل",
             reservationSuccess: "تم الحجز بنجاح!",
             errorLoading: "فشل تحميل الفعاليات",
-            tryAgain: "حاول مرة أخرى"
+            tryAgain: "حاول مرة أخرى",
+            searchPlaceholder: "بحث عن الفعاليات..."
         },
         participant: {
             myReservations: "حجوزاتي",

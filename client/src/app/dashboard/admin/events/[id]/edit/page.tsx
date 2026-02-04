@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import DashboardLoading from '@/components/loading/DashboardLoading'
 import {
@@ -27,6 +27,9 @@ export default function EditEventPage() {
         location: '',
         maxCapacity: 100,
     })
+    const [image, setImage] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
+    const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -43,6 +46,7 @@ export default function EditEventPage() {
                         location: event.location,
                         maxCapacity: event.maxCapacity,
                     })
+                    setExistingImageUrl(event.imageUrl || null)
                 } else {
                     setError(result.error || 'Failed to load event')
                 }
@@ -62,15 +66,18 @@ export default function EditEventPage() {
         setSaving(true)
 
         try {
-            // Convert datetime-local to ISO string
-            const dateTime = formData.dateTime
-                ? new Date(formData.dateTime).toISOString()
-                : undefined
+            const submitData = new FormData()
+            if (formData.title) submitData.append('title', formData.title)
+            if (formData.description) submitData.append('description', formData.description)
+            if (formData.dateTime) submitData.append('dateTime', new Date(formData.dateTime).toISOString())
+            if (formData.location) submitData.append('location', formData.location)
+            if (formData.maxCapacity) submitData.append('maxCapacity', formData.maxCapacity.toString())
 
-            const result = await updateEventAction(eventId, {
-                ...formData,
-                dateTime,
-            })
+            if (image) {
+                submitData.append('image', image)
+            }
+
+            const result = await updateEventAction(eventId, submitData)
 
             if (result.success) {
                 router.push('/dashboard/admin/events')
@@ -82,6 +89,23 @@ export default function EditEventPage() {
         } finally {
             setSaving(false)
         }
+    }
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            setImage(file)
+            const reader = new FileReader()
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string)
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    const removeImage = () => {
+        setImage(null)
+        setImagePreview(null)
     }
 
     const handleChange = (
@@ -200,6 +224,59 @@ export default function EditEventPage() {
                         placeholder="Enter event location"
                         required
                     />
+                </div>
+
+                <div>
+                    <label className="form-label">Event Cover Image</label>
+                    <div className="mt-2">
+                        {(imagePreview || existingImageUrl) ? (
+                            <div className="relative aspect-video rounded-xl overflow-hidden border border-primary">
+                                <img
+                                    src={imagePreview || existingImageUrl || ''}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                />
+                                {imagePreview && (
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                                    >
+                                        <XMarkIcon className="h-4 w-4" />
+                                    </button>
+                                )}
+                                {!imagePreview && (
+                                    <label className="absolute bottom-2 right-2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg cursor-pointer">
+                                        <PhotoIcon className="h-5 w-5" />
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                        />
+                                    </label>
+                                )}
+                            </div>
+                        ) : (
+                            <label className="flex flex-col items-center justify-center aspect-video w-full border-2 border-dashed border-primary rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/5 transition-all">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <PhotoIcon className="h-10 w-10 text-tertiary mb-3" />
+                                    <p className="text-sm text-secondary">
+                                        <span className="font-bold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="text-xs text-tertiary mt-1">
+                                        Recommend: 16:9 Aspect Ratio (e.g. 1920x1080)
+                                    </p>
+                                </div>
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                            </label>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-end space-x-4 pt-4">

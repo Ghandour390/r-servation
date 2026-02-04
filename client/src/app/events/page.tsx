@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { CalendarDaysIcon, MapPinIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { CalendarDaysIcon, MapPinIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { getPublicEventsAction, Event } from '@/lib/actions/events'
 import { createReservationAction, getMyReservationsAction } from '@/lib/actions/reservations'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAppSelector } from '@/lib/redux/hooks'
+import FilterBar from '@/components/FilterBar'
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -14,12 +15,13 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true)
   const [reservingId, setReservingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [filters, setFilters] = useState({ search: '', category: '' })
   const { t, language } = useTranslation()
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (currentFilters = filters) => {
     try {
-      const result = await getPublicEventsAction()
+      const result = await getPublicEventsAction(currentFilters)
       if (result.success && result.data) {
         setEvents(result.data)
       } else {
@@ -47,8 +49,8 @@ export default function EventsPage() {
   }
 
   useEffect(() => {
-    fetchEvents()
-  }, [])
+    fetchEvents(filters)
+  }, [filters])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -147,6 +149,12 @@ export default function EventsPage() {
       {/* Events Grid */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FilterBar
+            onFilterChange={setFilters}
+            t={t}
+            placeholder={t.eventsPage.searchPlaceholder || 'Search events...'}
+          />
+
           {events.length === 0 ? (
             <div className="text-center py-20">
               <CalendarDaysIcon className="h-16 w-16 text-tertiary mx-auto mb-4" />
@@ -166,8 +174,20 @@ export default function EventsPage() {
 
                 return (
                   <div key={event.id} className="card overflow-hidden">
-                    {/* Event Image Placeholder */}
-                    <div className="h-48 bg-gradient-to-br from-indigo-400 to-emerald-400 relative">
+                    {/* Event Image */}
+                    <div className="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+                      {event.imageUrl ? (
+                        <img
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-emerald-400 flex items-center justify-center">
+                          <PhotoIcon className="h-12 w-12 text-white/50" />
+                        </div>
+                      )}
+
                       <div className="absolute top-4 left-4">
                         <span className={event.status === 'PUBLISHED' ? 'badge-published' : 'badge-draft'}>
                           {event.status}

@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Request, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, Query, ValidationPipe } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { Role, ReservationStatus } from '@prisma/client';
+import { Role, ReservationStatus, EventCategory } from '@prisma/client';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 
@@ -22,8 +22,8 @@ export class ReservationController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  findAll() {
-    return this.reservationService.findAll();
+  findAll(@Query('search') search?: string, @Query('category') category?: EventCategory) {
+    return this.reservationService.findAll({ search, category });
   }
 
   @Get('my')
@@ -43,8 +43,8 @@ export class ReservationController {
     return this.reservationService.updateStatus(id, data.status, req.user.id);
   }
 
-  @Put(':id/cancel')
-  cancel(@Param('id') id: string, @Request() req) {
-    return this.reservationService.cancel(id, req.user.id);
+  @Delete(':id')
+  delete(@Param('id') id: string, @Request() req) {
+    return this.reservationService.delete(id, req.user.id);
   }
 }

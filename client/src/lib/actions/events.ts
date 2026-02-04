@@ -21,6 +21,7 @@ export interface Event {
     _count?: {
         reservations: number
     }
+    imageUrl?: string
     createdAt: string
     updatedAt: string
 }
@@ -54,9 +55,9 @@ export interface EventResponse {
 }
 
 // Get all events (authenticated - includes all statuses for admin)
-export async function getEventsAction(): Promise<EventsResponse> {
+export async function getEventsAction(params?: { search?: string; category?: string }): Promise<EventsResponse> {
     try {
-        const response = await axiosInstance.get('/events')
+        const response = await axiosInstance.get('/events', { params })
         console.log('get event', response.data);
         return { success: true, data: response.data.data || response.data }
     } catch (error: any) {
@@ -69,9 +70,9 @@ export async function getEventsAction(): Promise<EventsResponse> {
 }
 
 // Get all published events (public - no auth required)
-export async function getPublicEventsAction(): Promise<EventsResponse> {
+export async function getPublicEventsAction(params?: { search?: string; category?: string }): Promise<EventsResponse> {
     try {
-        const response = await axiosInstance.get('/events')
+        const response = await axiosInstance.get('/events', { params })
 
         // Filter to only show published events for public view
         const events = (response.data.data || response.data) as Event[]
@@ -100,9 +101,13 @@ export async function getEventByIdAction(id: string): Promise<EventResponse> {
 }
 
 // Create event (Admin only)
-export async function createEventAction(data: CreateEventData): Promise<EventResponse> {
+export async function createEventAction(formData: FormData): Promise<EventResponse> {
     try {
-        const response = await axiosInstance.post('/events', data)
+        const response = await axiosInstance.post('/events', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
         return { success: true, data: response.data.data || response.data }
     } catch (error: any) {
         console.error('Create event error:', error.message)
@@ -111,9 +116,13 @@ export async function createEventAction(data: CreateEventData): Promise<EventRes
 }
 
 // Update event (Admin only)
-export async function updateEventAction(id: string, data: UpdateEventData): Promise<EventResponse> {
+export async function updateEventAction(id: string, formData: FormData): Promise<EventResponse> {
     try {
-        const response = await axiosInstance.put(`/events/${id}`, data)
+        const response = await axiosInstance.put(`/events/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
         return { success: true, data: response.data.data || response.data }
     } catch (error: any) {
         console.error('Update event error:', error.message)

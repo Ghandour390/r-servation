@@ -6,6 +6,7 @@ export class AdminService {
     constructor(private prisma: PrismaService) { }
 
     async getStats() {
+        console.log('Fetching statistics...');
         const totalEvents = await this.prisma.event.count();
         const publishedEvents = await this.prisma.event.count({ where: { status: 'PUBLISHED' } });
         const draftEvents = await this.prisma.event.count({ where: { status: 'DRAFT' } });
@@ -23,7 +24,7 @@ export class AdminService {
             orderBy: { createdAt: 'desc' },
             include: {
                 user: { select: { firstName: true, lastName: true, email: true } },
-                event: { select: { title: true } },
+                event: { select: { title: true, imageUrl: true } },
             },
         });
 
@@ -40,8 +41,11 @@ export class AdminService {
                 dateTime: true,
                 remainingPlaces: true,
                 maxCapacity: true,
+                imageUrl: true,
             },
         });
+
+        console.log('Stats fetched successfully');
 
         return {
             totalEvents,
@@ -53,10 +57,11 @@ export class AdminService {
             pendingReservations,
             cancelledReservations,
             totalUsers,
-            recentReservations: recentReservations.map(r => ({
+            recentReservations: recentReservations.map((r: any) => ({
                 id: r.id,
                 userName: `${r.user.firstName} ${r.user.lastName}`,
                 eventTitle: r.event.title,
+                eventImageUrl: r.event.imageUrl,
                 status: r.status,
                 createdAt: r.createdAt,
             })),
