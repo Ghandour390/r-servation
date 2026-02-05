@@ -12,6 +12,7 @@ import {
     updateReservationStatusAction,
     Reservation
 } from '@/lib/actions/reservations'
+import { getCategoriesAction, Category } from '@/lib/actions/categories'
 import { useTranslation } from '@/hooks/useTranslation'
 
 export default function AdminReservationsPage() {
@@ -30,6 +31,7 @@ export default function AdminReservationsPage() {
     })
     const [actionLoading, setActionLoading] = useState(false)
     const [filters, setFilters] = useState({ search: '', category: '' })
+    const [categories, setCategories] = useState<Category[]>([])
     const { t } = useTranslation()
 
     const fetchReservations = async (currentFilters = filters) => {
@@ -51,6 +53,20 @@ export default function AdminReservationsPage() {
     useEffect(() => {
         fetchReservations(filters)
     }, [t, filters])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const result = await getCategoriesAction()
+                if (result.success && result.data) {
+                    setCategories(result.data)
+                }
+            } catch (err) {
+                console.error('Error fetching categories:', err)
+            }
+        }
+        fetchCategories()
+    }, [])
 
     const filteredReservations = reservations.filter((r) => {
         if (!statusFilter) return true
@@ -276,6 +292,7 @@ export default function AdminReservationsPage() {
                 <FilterBar
                     onFilterChange={setFilters}
                     t={t}
+                    categories={categories}
                     extraActive={!!statusFilter}
                     onClear={() => setStatusFilter('')}
                     extra={

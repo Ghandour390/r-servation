@@ -1,6 +1,7 @@
 'use server'
 
 import axiosInstance from '../axios'
+import type { Category } from './categories'
 
 export interface Event {
     id: string
@@ -12,6 +13,8 @@ export interface Event {
     remainingPlaces: number
     status: 'DRAFT' | 'PUBLISHED' | 'CANCELED'
     managerId: string
+    categoryId?: string | null
+    category?: Category | null
     manager?: {
         id: string
         firstName: string
@@ -32,6 +35,7 @@ export interface CreateEventData {
     dateTime: string
     location: string
     maxCapacity: number
+    categoryId?: string
 }
 
 export interface UpdateEventData {
@@ -40,6 +44,7 @@ export interface UpdateEventData {
     dateTime?: string
     location?: string
     maxCapacity?: number
+    categoryId?: string
 }
 
 export interface EventsResponse {

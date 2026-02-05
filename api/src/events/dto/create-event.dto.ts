@@ -1,11 +1,4 @@
-import { IsString, IsNotEmpty, IsDateString, IsInt, Min, IsNumber, IsEnum, IsOptional } from 'class-validator';
-
-export enum EventCategory {
-  CONFERENCE = 'CONFERENCE',
-  WORKSHOP = 'WORKSHOP',
-  SEMINAR = 'SEMINAR',
-  MEETING = 'MEETING'
-}
+import { IsString, IsNotEmpty, IsDateString, IsInt, Min, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateEventDto {
   @IsString()
@@ -32,7 +25,7 @@ export class CreateEventDto {
   @Min(0)
   price?: number;
 
-  @IsOptional({message: 'Please enter a category exemple: CONFERENCE, WORKSHOP, SEMINAR, MEETING'})
-  @IsEnum(EventCategory)
-  category?: EventCategory;
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
 }

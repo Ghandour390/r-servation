@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { CalendarDaysIcon, MapPinIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { getPublicEventsAction, Event } from '@/lib/actions/events'
 import { createReservationAction, getMyReservationsAction } from '@/lib/actions/reservations'
+import { getCategoriesAction, Category } from '@/lib/actions/categories'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAppSelector } from '@/lib/redux/hooks'
 import FilterBar from '@/components/FilterBar'
@@ -16,6 +17,7 @@ export default function EventsPage() {
   const [reservingId, setReservingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState({ search: '', category: '' })
+  const [categories, setCategories] = useState<Category[]>([])
   const { t, language } = useTranslation()
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
 
@@ -48,9 +50,24 @@ export default function EventsPage() {
     }
   }
 
+  const fetchCategories = async () => {
+    try {
+      const result = await getCategoriesAction()
+      if (result.success && result.data) {
+        setCategories(result.data)
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+    }
+  }
+
   useEffect(() => {
     fetchEvents(filters)
   }, [filters])
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -153,6 +170,7 @@ export default function EventsPage() {
             onFilterChange={setFilters}
             t={t}
             placeholder={t.eventsPage.searchPlaceholder || 'Search events...'}
+            categories={categories}
           />
 
           {events.length === 0 ? (

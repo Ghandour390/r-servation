@@ -1,4 +1,4 @@
-import { PrismaClient, Role, EventStatus, ReservationStatus, EventCategory } from '@prisma/client';
+import { PrismaClient, Role, EventStatus, ReservationStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -8,10 +8,10 @@ const eventCount = 20;
 const passwordPlain = 'Password123!';
 
 const categories = [
-  EventCategory.CONFERENCE,
-  EventCategory.WORKSHOP,
-  EventCategory.SEMINAR,
-  EventCategory.MEETING,
+  { name: 'Conference', description: 'Large-scale events with multiple sessions and speakers.' },
+  { name: 'Workshop', description: 'Hands-on sessions focused on learning and practice.' },
+  { name: 'Seminar', description: 'Focused talks and discussions around a topic.' },
+  { name: 'Meeting', description: 'Smaller gatherings for collaboration and updates.' },
 ];
 
 const locations = [
@@ -43,6 +43,7 @@ async function main() {
 
   await prisma.reservation.deleteMany();
   await prisma.event.deleteMany();
+  await prisma.category.deleteMany();
   await prisma.user.deleteMany();
 
   const hashedPassword = await bcrypt.hash(passwordPlain, 10);
@@ -73,6 +74,10 @@ async function main() {
     )
   );
 
+  const createdCategories = await Promise.all(
+    categories.map((category) => prisma.category.create({ data: category }))
+  );
+
   const now = new Date();
   const events = await Promise.all(
     Array.from({ length: eventCount }).map((_, index) => {
@@ -85,6 +90,7 @@ async function main() {
             ? EventStatus.DRAFT
             : EventStatus.PUBLISHED;
       const maxCapacity = 20 + (index % 5) * 10;
+      const category = createdCategories[index % createdCategories.length];
       return prisma.event.create({
         data: {
           title: `${titles[index % titles.length]} ${2026 + (index % 2)}`,
@@ -94,8 +100,8 @@ async function main() {
           maxCapacity,
           remainingPlaces: maxCapacity,
           status,
-          category: categories[index % categories.length],
-          managerId: admin.id,
+          category: { connect: { id: category.id } },
+          manager: { connect: { id: admin.id } },
         },
       });
     })
@@ -156,6 +162,7 @@ async function main() {
   console.log(`Admin: ${admin.email}`);
   console.log(`Participants: ${participants.length}`);
   console.log(`Events: ${events.length}`);
+  console.log(`Categories: ${createdCategories.length}`);
   console.log(`Reservations: ${reservationsToCreate.length}`);
   console.log('Seeding finished.');
 }

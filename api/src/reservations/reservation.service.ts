@@ -3,7 +3,7 @@ import { ReservationRepository } from './reservation.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { MinioService } from '../minio/minio.service';
 import { TicketsService } from '../tickets/tickets.service';
-import { Reservation, ReservationStatus, Prisma, EventCategory } from '@prisma/client';
+import { Reservation, ReservationStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReservationService {
@@ -43,11 +43,11 @@ export class ReservationService {
     });
   }
 
-  async findAll(filters?: { search?: string; category?: EventCategory }): Promise<Reservation[]> {
+  async findAll(filters?: { search?: string; category?: string }): Promise<Reservation[]> {
     const where: Prisma.ReservationWhereInput = {};
 
     if (filters?.category) {
-      where.event = { category: filters.category };
+      where.event = { categoryId: filters.category };
     }
 
     if (filters?.search) {

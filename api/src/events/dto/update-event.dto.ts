@@ -1,6 +1,5 @@
 import { IsString, IsOptional, IsDateString, IsInt, Min, IsEnum, IsNumber } from 'class-validator';
 import { EventStatus } from '@prisma/client';
-import { EventCategory } from './create-event.dto';
 
 export class UpdateEventDto {
   @IsOptional()
@@ -30,8 +29,8 @@ export class UpdateEventDto {
   price?: number;
 
   @IsOptional()
-  @IsEnum(EventCategory)
-  category?: EventCategory;
+  @IsString()
+  categoryId?: string;
 
   @IsOptional()
   @IsEnum(EventStatus)

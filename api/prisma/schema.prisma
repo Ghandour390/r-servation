@@ -21,13 +21,6 @@ enum EventStatus {
   CANCELED
 }
 
-enum EventCategory {
-  CONFERENCE
-  WORKSHOP
-  SEMINAR
-  MEETING
-}
-
 enum ReservationStatus {
   PENDING
   CONFIRMED
@@ -63,18 +56,30 @@ model Event {
   maxCapacity      Int
   remainingPlaces  Int
   price            Float?
-  category         EventCategory?
+  categoryId       String?
   status           EventStatus   @default(DRAFT)
   imageUrl         String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   
   // Relations
+  category         Category?     @relation(fields: [categoryId], references: [id])
   managerId        String
   manager          User          @relation(fields: [managerId], references: [id])
   reservations     Reservation[]
   
   @@map("events")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+
+  // Relations
+  events      Event[]
+
+  @@map("categories")
 }
 
 model Reservation {

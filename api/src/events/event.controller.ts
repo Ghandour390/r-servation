@@ -5,7 +5,6 @@ import { EventService } from './event.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { Role, EventCategory } from '@prisma/client';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 
@@ -37,6 +36,8 @@ export class EventController {
         imageUrl = await this.minioService.uploadAvatar(fileName, file.buffer);
       }
 
+      const categoryId = data.categoryId?.trim() ? data.categoryId : undefined;
+
       return this.eventService.create({
         ...data,
         dateTime: new Date(data.dateTime),
@@ -45,7 +46,7 @@ export class EventController {
         title: data.title,
         description: data.description,
         location: data.location,
-        category: data.category,
+        categoryId,
         managerId: req.user.id,
         imageUrl,
       });
@@ -56,7 +57,7 @@ export class EventController {
   }
 
   @Get()
-  findAll(@Request() req, @Query('search') search?: string, @Query('category') category?: EventCategory) {
+  findAll(@Request() req, @Query('search') search?: string, @Query('category') category?: string) {
     const userRole = req.user?.role;
     return this.eventService.findAll(userRole, { search, category });
   }
@@ -81,6 +82,14 @@ export class EventController {
     if (data.dateTime) updateData.dateTime = new Date(data.dateTime);
     if (data.maxCapacity) updateData.maxCapacity = Number(data.maxCapacity);
     if (data.price) updateData.price = Number(data.price);
+    if (data.categoryId !== undefined) {
+      if (data.categoryId && data.categoryId.trim()) {
+        updateData.category = { connect: { id: data.categoryId } };
+      } else {
+        updateData.category = { disconnect: true };
+      }
+      delete updateData.categoryId;
+    }
 
     if (file) {
       this.logger.log(`Uploading updated event image: ${file.originalname}`);

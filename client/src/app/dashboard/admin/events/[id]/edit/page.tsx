@@ -8,9 +8,10 @@ import DashboardLoading from '@/components/loading/DashboardLoading'
 import {
     getEventByIdAction,
     updateEventAction,
-    UpdateEventData,
-    Event
+    UpdateEventData
 } from '@/lib/actions/events'
+import { getCategoriesAction, Category } from '@/lib/actions/categories'
+import { useTranslation } from '@/hooks/useTranslation'
 
 export default function EditEventPage() {
     const router = useRouter()
@@ -26,10 +27,13 @@ export default function EditEventPage() {
         dateTime: '',
         location: '',
         maxCapacity: 100,
+        categoryId: '',
     })
     const [image, setImage] = useState<File | null>(null)
     const [imagePreview, setImagePreview] = useState<string | null>(null)
     const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
+    const [categories, setCategories] = useState<Category[]>([])
+    const { t } = useTranslation()
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -45,6 +49,7 @@ export default function EditEventPage() {
                         dateTime,
                         location: event.location,
                         maxCapacity: event.maxCapacity,
+                        categoryId: event.categoryId || event.category?.id || '',
                     })
                     setExistingImageUrl(event.imageUrl || null)
                 } else {
@@ -60,6 +65,20 @@ export default function EditEventPage() {
         fetchEvent()
     }, [eventId])
 
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const result = await getCategoriesAction()
+                if (result.success && result.data) {
+                    setCategories(result.data)
+                }
+            } catch (err) {
+                console.error('Error fetching categories:', err)
+            }
+        }
+        fetchCategories()
+    }, [])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
@@ -72,6 +91,9 @@ export default function EditEventPage() {
             if (formData.dateTime) submitData.append('dateTime', new Date(formData.dateTime).toISOString())
             if (formData.location) submitData.append('location', formData.location)
             if (formData.maxCapacity) submitData.append('maxCapacity', formData.maxCapacity.toString())
+            if (formData.categoryId !== undefined) {
+                submitData.append('categoryId', formData.categoryId || '')
+            }
 
             if (image) {
                 submitData.append('image', image)
@@ -109,7 +131,7 @@ export default function EditEventPage() {
     }
 
     const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
     ) => {
         const { name, value, type } = e.target
         setFormData((prev) => ({
@@ -224,6 +246,26 @@ export default function EditEventPage() {
                         placeholder="Enter event location"
                         required
                     />
+                </div>
+
+                <div>
+                    <label htmlFor="categoryId" className="form-label">
+                        {t.categories?.label || 'Category'}
+                    </label>
+                    <select
+                        id="categoryId"
+                        name="categoryId"
+                        value={formData.categoryId || ''}
+                        onChange={handleChange}
+                        className="form-input"
+                    >
+                        <option value="">{t.events?.allCategories || 'All Categories'}</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div>

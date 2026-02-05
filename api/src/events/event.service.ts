@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { MinioService } from '../minio/minio.service';
-import { Event, EventStatus, EventCategory, Prisma } from '@prisma/client';
+import { Event, EventStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class EventService {
@@ -37,23 +37,24 @@ export class EventService {
     location: string;
     maxCapacity: number;
     price?: number;
-    category?: EventCategory;
+    categoryId?: string;
     managerId: string;
     imageUrl?: string;
   }): Promise<Event> {
-    const { managerId, ...eventData } = data;
+    const { managerId, categoryId, ...eventData } = data;
     return this.eventRepository.create({
       ...eventData,
       remainingPlaces: data.maxCapacity,
+      category: categoryId ? { connect: { id: categoryId } } : undefined,
       manager: { connect: { id: managerId } }
     });
   }
 
-  async findAll(userRole?: string, filters?: { search?: string; category?: EventCategory }): Promise<Event[]> {
+  async findAll(userRole?: string, filters?: { search?: string; category?: string }): Promise<Event[]> {
     const where: Prisma.EventWhereInput = {};
 
     if (filters?.category) {
-      where.category = filters.category;
+      where.categoryId = filters.category;
     }
 
     if (filters?.search) {
@@ -71,6 +72,7 @@ export class EventService {
           manager: {
             select: { id: true, firstName: true, lastName: true, email: true }
           },
+          category: true,
           reservations: {
             include: { user: { select: { firstName: true, lastName: true, email: true } } }
           }
@@ -86,6 +88,7 @@ export class EventService {
         manager: {
           select: { id: true, firstName: true, lastName: true, email: true }
         },
+        category: true,
         _count: { select: { reservations: true } }
       }
     });
@@ -96,10 +99,12 @@ export class EventService {
     const includeOptions = userRole === 'ADMIN'
       ? {
         manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        category: true,
         reservations: { include: { user: { select: { firstName: true, lastName: true, email: true } } } }
       }
       : {
         manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        category: true,
         _count: { select: { reservations: true } }
       };
 

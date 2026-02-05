@@ -22,6 +22,7 @@ import {
     cancelEventAction,
     Event
 } from '@/lib/actions/events'
+import { getCategoriesAction, Category } from '@/lib/actions/categories'
 import FilterBar from '@/components/FilterBar'
 import { useTranslation } from '@/hooks/useTranslation'
 
@@ -35,6 +36,7 @@ export default function AdminEventsPage() {
     })
     const [actionLoading, setActionLoading] = useState(false)
     const [filters, setFilters] = useState({ search: '', category: '' })
+    const [categories, setCategories] = useState<Category[]>([])
     const { t } = useTranslation()
 
     const fetchEvents = async (currentFilters = filters) => {
@@ -56,6 +58,20 @@ export default function AdminEventsPage() {
     useEffect(() => {
         fetchEvents(filters)
     }, [filters])
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const result = await getCategoriesAction()
+                if (result.success && result.data) {
+                    setCategories(result.data)
+                }
+            } catch (err) {
+                console.error('Error fetching categories:', err)
+            }
+        }
+        fetchCategories()
+    }, [])
 
     const handleDelete = async () => {
         if (!deleteModal.event) return
@@ -243,7 +259,7 @@ export default function AdminEventsPage() {
 
             {/* Events Table */}
             <div className="dashboard-card p-4">
-                <FilterBar onFilterChange={setFilters} t={t} />
+                <FilterBar onFilterChange={setFilters} t={t} categories={categories} />
                 <div className="overflow-hidden">
                     <DataTable
                         columns={columns}

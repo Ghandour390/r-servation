@@ -3,7 +3,7 @@ import { ReservationService } from './reservation.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { Role, ReservationStatus, EventCategory } from '@prisma/client';
+import { ReservationStatus } from '@prisma/client';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
 
@@ -22,7 +22,7 @@ export class ReservationController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  findAll(@Query('search') search?: string, @Query('category') category?: EventCategory) {
+  findAll(@Query('search') search?: string, @Query('category') category?: string) {
     return this.reservationService.findAll({ search, category });
   }
 

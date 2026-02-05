@@ -3,19 +3,19 @@
 import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import type { Category } from '@/lib/actions/categories'
 
 interface FilterBarProps {
     onFilterChange: (filters: { search: string; category: string }) => void
     placeholder?: string
     t: any // Translation object
+    categories?: Category[]
     extra?: ReactNode
     extraActive?: boolean
     onClear?: () => void
 }
 
-const categories = ['CONFERENCE', 'WORKSHOP', 'SEMINAR', 'MEETING']
-
-export default function FilterBar({ onFilterChange, placeholder, t, extra, extraActive = false, onClear }: FilterBarProps) {
+export default function FilterBar({ onFilterChange, placeholder, t, categories = [], extra, extraActive = false, onClear }: FilterBarProps) {
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('')
 
@@ -62,8 +62,8 @@ export default function FilterBar({ onFilterChange, placeholder, t, extra, extra
                 >
                     <option value="">{t.events?.allCategories || 'All Categories'}</option>
                     {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                            {cat}
+                        <option key={cat.id} value={cat.id}>
+                            {cat.name}
                         </option>
                     ))}
                 </select>

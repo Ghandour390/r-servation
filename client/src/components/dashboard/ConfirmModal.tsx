@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import type { ReactNode } from 'react'
 
 interface ConfirmModalProps {
     isOpen: boolean
@@ -13,6 +13,7 @@ interface ConfirmModalProps {
     cancelText?: string
     variant?: 'danger' | 'warning' | 'info'
     isLoading?: boolean
+    children?: ReactNode
 }
 
 export default function ConfirmModal({
@@ -25,6 +26,7 @@ export default function ConfirmModal({
     cancelText = 'Cancel',
     variant = 'danger',
     isLoading = false,
+    children,
 }: ConfirmModalProps) {
     if (!isOpen) return null
 
@@ -84,6 +86,7 @@ export default function ConfirmModal({
                         <div className="flex-1">
                             <h3 className="text-lg font-semibold text-primary">{title}</h3>
                             <p className="mt-2 text-sm text-secondary">{message}</p>
+                            {children ? <div className="mt-4">{children}</div> : null}
                         </div>
                     </div>
 

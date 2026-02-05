@@ -5,7 +5,10 @@ export type { IEventRepository } from '../events/event.repository';
 export { EventRepository } from '../events/event.repository';
 export type { IReservationRepository } from '../reservations/reservation.repository';
 export { ReservationRepository } from '../reservations/reservation.repository';
+export type { ICategoryRepository } from '../categories/category.repository';
+export { CategoryRepository } from '../categories/category.repository';
 
 // Repository Modules
 export { EventsModule } from '../events/events.module';
 export { ReservationsModule } from '../reservations/reservations.module';
+export { CategoriesModule } from '../categories/categories.module';

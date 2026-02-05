@@ -8,9 +8,9 @@ import {
     TicketIcon,
     ChartBarIcon,
     ArrowDownTrayIcon,
-    Cog6ToothIcon,
     XMarkIcon,
     UserGroupIcon,
+    TagIcon,
     UserCircleIcon
 } from '@heroicons/react/24/outline'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -29,6 +29,7 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
         { name: t.sidebar.dashboard, href: '/dashboard/admin', icon: HomeIcon },
         { name: t.sidebar.events, href: '/dashboard/admin/events', icon: CalendarDaysIcon },
         { name: t.sidebar.reservations, href: '/dashboard/admin/reservations', icon: TicketIcon },
+        { name: t.sidebar.categories, href: '/dashboard/admin/categories', icon: TagIcon },
         { name: t.sidebar.users, href: '/dashboard/admin/users', icon: UserGroupIcon },
         { name: t.sidebar.statistics, href: '/dashboard/admin/statistics', icon: ChartBarIcon },
         { name: t.sidebar.export, href: '/dashboard/admin/export', icon: ArrowDownTrayIcon },
