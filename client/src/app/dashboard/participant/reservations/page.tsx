@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
     CalendarDaysIcon,
     MapPinIcon,
@@ -20,6 +21,7 @@ import {
 import { useTranslation } from '@/hooks/useTranslation'
 
 export default function ParticipantReservationsPage() {
+    const router = useRouter()
     const [reservations, setReservations] = useState<Reservation[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -75,10 +77,20 @@ export default function ParticipantReservationsPage() {
         try {
             const result = await downloadTicketAction(reservation.id)
             if (result.success && result.url) {
-                // Open ticket URL in new tab or download
-                window.open(result.url, '_blank')
+                // Trigger a real browser download (saved to user's Downloads folder by default browser settings)
+                const link = document.createElement('a')
+                link.href = result.url
+                link.download = ''
+                link.rel = 'noopener'
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
             } else {
-                alert(result.error || t.participant.ticketNotAvailable)
+                const msg = result.error || t.participant.ticketNotAvailable
+                alert(msg)
+                if (msg.toLowerCase().includes('profile photo')) {
+                    router.push('/dashboard/profile')
+                }
             }
         } catch (err) {
             alert(t.participant.failedDownload)
@@ -148,7 +160,13 @@ export default function ParticipantReservationsPage() {
                                     <div key={reservation.id} className="dashboard-card">
                                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                                             {/* Event Image */}
-                                            <div className="w-full md:w-32 h-24 bg-gradient-to-br from-indigo-400 to-emerald-400 rounded-lg flex-shrink-0" />
+                                            <div className="w-full md:w-32 h-24 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800 border border-primary">
+                                                <img
+                                                    src={reservation.event?.imageUrl || '/event.avif'}
+                                                    alt={reservation.event?.title || 'Event'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
 
                                             {/* Event Details */}
                                             <div className="flex-1">
@@ -213,7 +231,13 @@ export default function ParticipantReservationsPage() {
                                     <div key={reservation.id} className="dashboard-card opacity-75">
                                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                                             {/* Event Image */}
-                                            <div className="w-full md:w-24 h-16 bg-gray-300 dark:bg-gray-700 rounded-lg flex-shrink-0" />
+                                            <div className="w-full md:w-24 h-16 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800 border border-primary">
+                                                <img
+                                                    src={reservation.event?.imageUrl || '/event.avif'}
+                                                    alt={reservation.event?.title || 'Event'}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
 
                                             {/* Event Details */}
                                             <div className="flex-1">
@@ -231,12 +255,23 @@ export default function ParticipantReservationsPage() {
                                             </div>
 
                                             {/* Actions */}
-                                            <Link
-                                                href={`/events/${reservation.eventId}`}
-                                                className="btn-secondary text-sm"
-                                            >
-                                                {t.participant.viewEvent}
-                                            </Link>
+                                            <div className="flex flex-row md:flex-col gap-2">
+                                                {reservation.status === 'CONFIRMED' && (
+                                                    <button
+                                                        onClick={() => handleDownloadTicket(reservation)}
+                                                        className="btn-primary flex items-center justify-center space-x-2 text-sm"
+                                                    >
+                                                        <ArrowDownTrayIcon className="h-4 w-4" />
+                                                        <span>{t.participant.downloadTicket}</span>
+                                                    </button>
+                                                )}
+                                                <Link
+                                                    href={`/events/${reservation.eventId}`}
+                                                    className="btn-secondary text-sm text-center"
+                                                >
+                                                    {t.participant.viewEvent}
+                                                </Link>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

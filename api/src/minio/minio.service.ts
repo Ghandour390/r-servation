@@ -34,7 +34,13 @@ export class MinioService implements OnModuleInit {
   }
 
   async uploadTicket(fileName: string, fileBuffer: Buffer): Promise<string> {
-    await this.minioClient.putObject(this.bucketName, fileName, fileBuffer);
+    await this.minioClient.putObject(
+      this.bucketName,
+      fileName,
+      fileBuffer,
+      fileBuffer.length,
+      { 'Content-Type': 'application/pdf' },
+    );
     return await this.minioClient.presignedGetObject(this.bucketName, fileName, 24 * 60 * 60); // 24h expiry
   }
 
@@ -49,6 +55,44 @@ export class MinioService implements OnModuleInit {
 
   async getTicketUrl(fileName: string): Promise<string> {
     return await this.minioClient.presignedGetObject(this.bucketName, fileName, 24 * 60 * 60);
+  }
+
+  async getObjectUrl(fileName: string, expirySeconds: number): Promise<string> {
+    return await this.minioClient.presignedGetObject(this.bucketName, fileName, expirySeconds);
+  }
+
+  async getObjectDownloadUrl(
+    fileName: string,
+    expirySeconds: number,
+    downloadFileName: string,
+    contentType = 'application/octet-stream',
+  ): Promise<string> {
+    const safeName = downloadFileName.replace(/"/g, "'");
+    return await this.minioClient.presignedGetObject(this.bucketName, fileName, expirySeconds, {
+      'response-content-disposition': `attachment; filename="${safeName}"`,
+      'response-content-type': contentType,
+      'response-cache-control': 'no-store',
+    });
+  }
+
+  extractObjectKeyFromUrl(url: string): string | null {
+    try {
+      const parsed = new URL(url);
+      const path = decodeURIComponent(parsed.pathname);
+      const prefix = `/${this.bucketName}/`;
+      if (path.startsWith(prefix)) {
+        return path.slice(prefix.length);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  async refreshPresignedUrl(url: string, expirySeconds: number): Promise<string> {
+    const key = this.extractObjectKeyFromUrl(url);
+    if (!key) return url;
+    return this.getObjectUrl(key, expirySeconds);
   }
 
   async deleteTicket(fileName: string): Promise<void> {

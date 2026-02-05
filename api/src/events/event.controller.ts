@@ -19,7 +19,8 @@ export class EventController {
   ) { }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body(ValidationPipe) data: CreateEventDto,

@@ -1,19 +1,52 @@
-import { PrismaClient, Role, EventStatus, ReservationStatus } from '@prisma/client';
+import { PrismaClient, Role, EventStatus, ReservationStatus, EventCategory } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+const participantCount = 40;
+const eventCount = 20;
+const passwordPlain = 'Password123!';
+
+const categories = [
+  EventCategory.CONFERENCE,
+  EventCategory.WORKSHOP,
+  EventCategory.SEMINAR,
+  EventCategory.MEETING,
+];
+
+const locations = [
+  'Casablanca',
+  'Rabat',
+  'Marrakech',
+  'Tanger',
+  'Agadir',
+  'Fes',
+  'Oujda',
+  'Kenitra',
+];
+
+const titles = [
+  'Tech Summit',
+  'AI Workshop',
+  'Product Meetup',
+  'Design Sprint',
+  'Startup Pitch',
+  'Cloud Conference',
+  'Cybersecurity Forum',
+  'Data Science Day',
+  'DevOps Bootcamp',
+  'Entrepreneurship Talk',
+];
+
 async function main() {
   console.log('Start seeding ...');
 
-  // Nettoyage de la base de données (ordre important à cause des clés étrangères)
   await prisma.reservation.deleteMany();
   await prisma.event.deleteMany();
   await prisma.user.deleteMany();
 
-  const hashedPassword = await bcrypt.hash('Password123!', 10);
+  const hashedPassword = await bcrypt.hash(passwordPlain, 10);
 
-  // 1. Création de l'Admin
   const admin = await prisma.user.create({
     data: {
       email: 'admin@reservation.com',
@@ -24,59 +57,106 @@ async function main() {
       isEmailVerified: true,
     },
   });
-  console.log(`Created admin: ${admin.email}`);
 
-  // 2. Création d'un Participant
-  const participant = await prisma.user.create({
-    data: {
-      email: 'user@reservation.com',
-      password: hashedPassword,
-      firstName: 'John',
-      lastName: 'Doe',
-      role: Role.PARTICIPANT,
-      isEmailVerified: true,
-    },
+  const participants = await Promise.all(
+    Array.from({ length: participantCount }).map((_, index) =>
+      prisma.user.create({
+        data: {
+          email: `participant${index + 1}@reservation.com`,
+          password: hashedPassword,
+          firstName: `User${index + 1}`,
+          lastName: 'Participant',
+          role: Role.PARTICIPANT,
+          isEmailVerified: true,
+        },
+      })
+    )
+  );
+
+  const now = new Date();
+  const events = await Promise.all(
+    Array.from({ length: eventCount }).map((_, index) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() + (index + 1) * 2);
+      const status =
+        index % 10 === 0
+          ? EventStatus.CANCELED
+          : index % 3 === 0
+            ? EventStatus.DRAFT
+            : EventStatus.PUBLISHED;
+      const maxCapacity = 20 + (index % 5) * 10;
+      return prisma.event.create({
+        data: {
+          title: `${titles[index % titles.length]} ${2026 + (index % 2)}`,
+          description: 'Event description for testing.',
+          dateTime: date,
+          location: locations[index % locations.length],
+          maxCapacity,
+          remainingPlaces: maxCapacity,
+          status,
+          category: categories[index % categories.length],
+          managerId: admin.id,
+        },
+      });
+    })
+  );
+
+  const reservationsToCreate: {
+    userId: string;
+    eventId: string;
+    status: ReservationStatus;
+  }[] = [];
+
+  const eventReservationCounts: Record<string, number> = {};
+
+  events.forEach((event, index) => {
+    if (event.status !== EventStatus.PUBLISHED) return;
+    const take = 5 + (index % 10);
+    const startIndex = index % participants.length;
+    for (let i = 0; i < take; i++) {
+      const participant = participants[(startIndex + i) % participants.length];
+      const status =
+        i % 5 === 0
+          ? ReservationStatus.CANCELED
+          : i % 4 === 0
+            ? ReservationStatus.REFUSED
+            : i % 3 === 0
+              ? ReservationStatus.PENDING
+              : ReservationStatus.CONFIRMED;
+      reservationsToCreate.push({
+        userId: participant.id,
+        eventId: event.id,
+        status,
+      });
+      if (status === ReservationStatus.CONFIRMED || status === ReservationStatus.PENDING) {
+        eventReservationCounts[event.id] = (eventReservationCounts[event.id] || 0) + 1;
+      }
+    }
   });
-  console.log(`Created participant: ${participant.email}`);
 
-  // 3. Création d'Événements (gérés par l'admin)
-  const event1 = await prisma.event.create({
-    data: {
-      title: 'Conférence Tech 2024',
-      description: 'Une conférence sur les dernières innovations technologiques.',
-      dateTime: new Date('2024-12-15T09:00:00Z'),
-      location: 'Paris, Le Grand Rex',
-      maxCapacity: 100,
-      remainingPlaces: 99, // Une place sera prise par la réservation ci-dessous
-      status: EventStatus.PUBLISHED,
-      managerId: admin.id,
-    },
+  await prisma.reservation.createMany({
+    data: reservationsToCreate,
+    skipDuplicates: true,
   });
 
-  const event2 = await prisma.event.create({
-    data: {
-      title: 'Atelier Cuisine Italienne',
-      description: 'Apprenez à faire des pâtes fraîches.',
-      dateTime: new Date('2024-11-20T18:00:00Z'),
-      location: 'Lyon',
-      maxCapacity: 20,
-      remainingPlaces: 20,
-      status: EventStatus.DRAFT,
-      managerId: admin.id,
-    },
-  });
-  console.log(`Created events: ${event1.title}, ${event2.title}`);
+  await Promise.all(
+    events.map((event) =>
+      prisma.event.update({
+        where: { id: event.id },
+        data: {
+          remainingPlaces: Math.max(
+            0,
+            event.maxCapacity - (eventReservationCounts[event.id] || 0)
+          ),
+        },
+      })
+    )
+  );
 
-  // 4. Création d'une Réservation
-  const reservation = await prisma.reservation.create({
-    data: {
-      userId: participant.id,
-      eventId: event1.id,
-      status: ReservationStatus.CONFIRMED,
-    },
-  });
-  console.log(`Created reservation for user ${participant.email} on event ${event1.title}`);
-
+  console.log(`Admin: ${admin.email}`);
+  console.log(`Participants: ${participants.length}`);
+  console.log(`Events: ${events.length}`);
+  console.log(`Reservations: ${reservationsToCreate.length}`);
   console.log('Seeding finished.');
 }
 

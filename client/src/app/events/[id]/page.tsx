@@ -155,7 +155,13 @@ export default function EventDetailPage() {
                 )}
 
                 {/* Event Image */}
-                <div className="h-64 md:h-80 bg-gradient-to-br from-indigo-400 to-emerald-400 rounded-2xl relative mb-8">
+                <div className="h-64 md:h-80 rounded-2xl relative mb-8 overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <img
+                        src={event.imageUrl || '/event.avif'}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
                     <div className="absolute top-4 left-4">
                         <span className={event.status === 'PUBLISHED' ? 'badge-published' : 'badge-draft'}>
                             {event.status}
@@ -215,7 +221,7 @@ export default function EventDetailPage() {
                                 </div>
                             ) : successMessage ? (
                                 <div className="text-center py-4">
-                                    <p className="text-emerald-500 font-medium">{t.common.status} ✓</p>
+                                    <p className="text-emerald-500 font-medium">{t.common.status.confirmed} ✓</p>
                                 </div>
                             ) : isParticipant ? (
                                 <button
@@ -258,3 +264,4 @@ export default function EventDetailPage() {
         </div>
     )
 }
+

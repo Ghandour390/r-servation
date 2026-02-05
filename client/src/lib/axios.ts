@@ -1,8 +1,13 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.URL_BACKEND ||
+  'http://localhost:5000';
+
 const axiosInstance = axios.create({
-  baseURL: process.env.URL_BACKEND || 'http://localhost:5000',
+  baseURL: apiBaseUrl,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -99,7 +104,7 @@ axiosInstance.interceptors.response.use(
         }
 
         const response = await axios.post(
-          `${process.env.URL_BACKEND || 'http://localhost:5000'}/auth/refresh`,
+          `${apiBaseUrl}/auth/refresh`,
           { refresh_token: refreshToken },
           {
             headers: {

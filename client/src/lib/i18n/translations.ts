@@ -98,6 +98,7 @@ export const translations = {
             event: "Event",
             reservedOn: "Reserved On",
             status: "Status",
+            allStatuses: "All Statuses",
             actions: "Actions",
             noReservations: "No reservations found.",
             confirmModal: {
@@ -350,6 +351,7 @@ export const translations = {
             event: "Événement",
             reservedOn: "Réservé le",
             status: "Statut",
+            allStatuses: "Tous les statuts",
             actions: "Actions",
             noReservations: "Aucune réservation trouvée.",
             confirmModal: {
@@ -602,6 +604,7 @@ export const translations = {
             event: "الفعالية",
             reservedOn: "حجز في",
             status: "الحالة",
+            allStatuses: "جميع الحالات",
             actions: "الإجراءات",
             noReservations: "لم يتم العثور على حجوزات.",
             confirmModal: {

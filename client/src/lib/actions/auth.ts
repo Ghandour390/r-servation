@@ -2,7 +2,10 @@
 
 import { cookies } from 'next/headers'
 
-const API_URL = process.env.URL_BACKEND || 'http://localhost:5000'
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.URL_BACKEND ||
+  'http://localhost:5000'
 
 export interface LoginData {
   email: string

@@ -83,6 +83,7 @@ model Reservation {
   updatedAt   DateTime          @updatedAt
   status      ReservationStatus @default(PENDING)
   ticketUrl   String?
+  ticketKey   String?
   
   // Relations
   userId      String

@@ -122,8 +122,14 @@ export default function ParticipantDashboardPage() {
                                 key={reservation.id}
                                 className="flex items-start space-x-4 p-4 bg-secondary rounded-lg hover:bg-tertiary transition-colors"
                             >
-                                {/* Event Image Placeholder */}
-                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-emerald-400 rounded-lg flex-shrink-0" />
+                                {/* Event Image */}
+                                <div className="w-16 h-16 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800 border border-primary">
+                                    <img
+                                        src={reservation.event?.imageUrl || '/event.avif'}
+                                        alt={reservation.event?.title || 'Event'}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
 
                                 {/* Event Info */}
                                 <div className="flex-1 min-w-0">

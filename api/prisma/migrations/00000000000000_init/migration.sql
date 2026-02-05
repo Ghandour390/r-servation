@@ -1,8 +1,14 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('ADMIN', 'PARTICIPANT');
 
 -- CreateEnum
 CREATE TYPE "EventStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'CANCELED');
+
+-- CreateEnum
+CREATE TYPE "EventCategory" AS ENUM ('CONFERENCE', 'WORKSHOP', 'SEMINAR', 'MEETING');
 
 -- CreateEnum
 CREATE TYPE "ReservationStatus" AS ENUM ('PENDING', 'CONFIRMED', 'REFUSED', 'CANCELED');
@@ -16,6 +22,7 @@ CREATE TABLE "users" (
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
     "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "avatarUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -31,7 +38,10 @@ CREATE TABLE "events" (
     "location" TEXT NOT NULL,
     "maxCapacity" INTEGER NOT NULL,
     "remainingPlaces" INTEGER NOT NULL,
+    "price" DOUBLE PRECISION,
+    "category" "EventCategory",
     "status" "EventStatus" NOT NULL DEFAULT 'DRAFT',
+    "imageUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "managerId" TEXT NOT NULL,
@@ -46,6 +56,7 @@ CREATE TABLE "reservations" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "status" "ReservationStatus" NOT NULL DEFAULT 'PENDING',
     "ticketUrl" TEXT,
+    "ticketKey" TEXT,
     "userId" TEXT NOT NULL,
     "eventId" TEXT NOT NULL,
 
@@ -66,3 +77,4 @@ ALTER TABLE "reservations" ADD CONSTRAINT "reservations_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "reservations" ADD CONSTRAINT "reservations_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "events"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

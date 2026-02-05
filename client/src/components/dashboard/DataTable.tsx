@@ -131,11 +131,11 @@ export default function DataTable<T extends Record<string, any>>({
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-primary">
-                    <div className="text-sm text-tertiary">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-primary">
+                    <div className="text-sm text-tertiary text-center sm:text-left">
                         Showing {startIndex + 1} to {Math.min(startIndex + pageSize, data.length)} of {data.length} results
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
                         <button
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                             disabled={currentPage === 1}

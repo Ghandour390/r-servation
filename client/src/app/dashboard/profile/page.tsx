@@ -5,8 +5,12 @@ import { getProfileAction, updateProfileAction, uploadAvatarAction, User, Update
 import { useTranslation } from '@/hooks/useTranslation'
 import { UserCircleIcon, EnvelopeIcon, UserIcon, ShieldCheckIcon, CalendarIcon, CameraIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import DashboardLoading from '@/components/loading/DashboardLoading'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import { setUser as setAuthUser } from '@/lib/redux/slices/authSlice'
 
 export default function DashboardProfilePage() {
+    const dispatch = useAppDispatch()
+    const { accessToken, refreshToken } = useAppSelector((state) => state.auth)
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState(false)
@@ -23,11 +27,28 @@ export default function DashboardProfilePage() {
     })
     const { t } = useTranslation()
 
+    const syncAuthUser = (updatedUser: User) => {
+        if (!accessToken || !refreshToken) return
+        dispatch(setAuthUser({
+            user: {
+                id: updatedUser.id,
+                email: updatedUser.email,
+                firstName: updatedUser.firstName,
+                lastName: updatedUser.lastName,
+                role: updatedUser.role,
+                avatarUrl: updatedUser.avatarUrl ?? null,
+            },
+            accessToken,
+            refreshToken,
+        }))
+    }
+
     const fetchProfile = async () => {
         try {
             const result = await getProfileAction()
             if (result.success && result.data) {
                 setUser(result.data)
+                syncAuthUser(result.data)
                 setFormData({
                     firstName: result.data.firstName,
                     lastName: result.data.lastName,
@@ -71,6 +92,7 @@ export default function DashboardProfilePage() {
             const result = await uploadAvatarAction(uploadData)
             if (result.success && result.data) {
                 setUser(result.data)
+                syncAuthUser(result.data)
                 setSuccess('Avatar updated successfully')
             } else {
                 setError(result.error || 'Failed to upload avatar')
@@ -95,6 +117,7 @@ export default function DashboardProfilePage() {
             const result = await updateProfileAction(dataToUpdate)
             if (result.success && result.data) {
                 setUser(result.data)
+                syncAuthUser(result.data)
                 setSuccess('Profile updated successfully')
                 setFormData(prev => ({ ...prev, password: '' }))
             } else {

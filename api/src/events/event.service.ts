@@ -1,10 +1,23 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EventRepository } from './event.repository';
+import { MinioService } from '../minio/minio.service';
 import { Event, EventStatus, EventCategory, Prisma } from '@prisma/client';
 
 @Injectable()
 export class EventService {
-  constructor(private eventRepository: EventRepository) { }
+  constructor(
+    private eventRepository: EventRepository,
+    private minioService: MinioService,
+  ) { }
+
+  private async withFreshImageUrl(event: Event): Promise<Event> {
+    if (!event.imageUrl) return event;
+    const refreshedUrl = await this.minioService.refreshPresignedUrl(
+      event.imageUrl,
+      7 * 24 * 60 * 60,
+    );
+    return { ...event, imageUrl: refreshedUrl };
+  }
 
   async create(data: {
     title: string;
@@ -41,7 +54,7 @@ export class EventService {
     }
 
     if (userRole === 'ADMIN') {
-      return this.eventRepository.findMany({
+      const events = await this.eventRepository.findMany({
         where,
         include: {
           manager: {
@@ -52,9 +65,11 @@ export class EventService {
           }
         }
       });
+      return Promise.all(events.map((event) => this.withFreshImageUrl(event)));
     }
 
-    return this.eventRepository.findMany({
+    where.status = EventStatus.PUBLISHED;
+    const events = await this.eventRepository.findMany({
       where,
       include: {
         manager: {
@@ -63,6 +78,7 @@ export class EventService {
         _count: { select: { reservations: true } }
       }
     });
+    return Promise.all(events.map((event) => this.withFreshImageUrl(event)));
   }
 
   async findById(id: string, userRole?: string): Promise<Event> {
@@ -78,7 +94,10 @@ export class EventService {
 
     const event = await this.eventRepository.findById(id, { include: includeOptions });
     if (!event) throw new NotFoundException('Event not found');
-    return event;
+    if (userRole !== 'ADMIN' && event.status !== EventStatus.PUBLISHED) {
+      throw new NotFoundException('Event not found');
+    }
+    return this.withFreshImageUrl(event);
   }
 
   async update(id: string, data: Partial<Event>, userId: string): Promise<Event> {

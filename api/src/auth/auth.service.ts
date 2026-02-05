@@ -87,9 +87,45 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        avatarUrl: user.avatarUrl,
         role: user.role,
       },
     };
+  }
+
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken) as {
+        sub: string;
+        email: string;
+        role: Role;
+      };
+
+      const user = await this.userRepository.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      if (!user.isEmailVerified) {
+        throw new UnauthorizedException('Email not verified');
+      }
+
+      const newPayload = { sub: user.id, email: user.email, role: user.role };
+      return {
+        access_token: this.jwtService.sign(newPayload),
+        refresh_token: this.jwtService.sign(newPayload, { expiresIn: '7d' }),
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarUrl: user.avatarUrl,
+          role: user.role,
+        },
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 
   async forgotPassword(email: string) {

@@ -19,6 +19,7 @@ export interface Reservation {
         title: string
         dateTime: string
         location: string
+        imageUrl?: string
     }
     createdAt: string
     updatedAt: string

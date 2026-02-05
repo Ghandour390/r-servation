@@ -32,7 +32,6 @@ export default function Navbar() {
     { name: t.navbar.about, href: '/about' },
     { name: t.navbar.events, href: '/events' },
   ]
-  console.log('user', user)
   const isActive = (path: string) => pathname === path
 
   return (
@@ -101,11 +100,11 @@ export default function Navbar() {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
                   >
-                    {user.photo ? (
+                    {user.avatarUrl ? (
                       <img
-                        src={user.photo}
+                        src={user.avatarUrl}
                         alt={user.firstName}
-                        className="w-8 h-8 rounded-full"
+                        className="w-8 h-8 rounded-full object-cover border border-primary"
                       />
                     ) : (
                       <UserCircleIcon className="h-8 w-8 text-tertiary" />
@@ -116,7 +115,7 @@ export default function Navbar() {
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-primary border border-primary rounded-lg shadow-lg py-1 z-50">
                       <Link
-                        href="/profile"
+                        href="/dashboard/profile"
                         className="block px-4 py-2 text-secondary hover:bg-secondary"
                         onClick={() => setShowUserMenu(false)}
                       >
@@ -198,11 +197,11 @@ export default function Navbar() {
                   isAuthenticated && user ? (
                     <>
                       <div className="px-3 py-2 flex items-center space-x-2">
-                        {user.photo ? (
+                        {user.avatarUrl ? (
                           <img
-                            src={user.photo}
+                            src={user.avatarUrl}
                             alt={user.firstName}
-                            className="w-8 h-8 rounded-full"
+                            className="w-8 h-8 rounded-full object-cover border border-primary"
                           />
                         ) : (
                           <UserCircleIcon className="h-8 w-8 text-tertiary" />
@@ -212,7 +211,7 @@ export default function Navbar() {
                         </span>
                       </div>
                       <Link
-                        href="/profile"
+                        href="/dashboard/profile"
                         className="block px-3 py-2 text-base font-medium text-secondary hover:bg-secondary rounded-md"
                         onClick={() => setIsOpen(false)}
                       >

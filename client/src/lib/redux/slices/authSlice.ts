@@ -13,7 +13,7 @@ interface User {
   firstName: string;
   lastName: string;
   role: string;
-  photo?: string | null;
+  avatarUrl?: string | null;
 }
 
 interface AuthState {

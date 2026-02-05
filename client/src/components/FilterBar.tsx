@@ -1,17 +1,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 interface FilterBarProps {
     onFilterChange: (filters: { search: string; category: string }) => void
     placeholder?: string
     t: any // Translation object
+    extra?: ReactNode
+    extraActive?: boolean
+    onClear?: () => void
 }
 
 const categories = ['CONFERENCE', 'WORKSHOP', 'SEMINAR', 'MEETING']
 
-export default function FilterBar({ onFilterChange, placeholder, t }: FilterBarProps) {
+export default function FilterBar({ onFilterChange, placeholder, t, extra, extraActive = false, onClear }: FilterBarProps) {
     const [search, setSearch] = useState('')
     const [category, setCategory] = useState('')
 
@@ -27,6 +31,7 @@ export default function FilterBar({ onFilterChange, placeholder, t }: FilterBarP
     const handleClear = () => {
         setSearch('')
         setCategory('')
+        onClear?.()
     }
 
     return (
@@ -69,8 +74,10 @@ export default function FilterBar({ onFilterChange, placeholder, t }: FilterBarP
                 </div>
             </div>
 
+            {extra}
+
             {/* Clear Button */}
-            {(search || category) && (
+            {(search || category || extraActive) && (
                 <button
                     onClick={handleClear}
                     className="flex items-center justify-center p-2.5 text-tertiary hover:text-red-500 transition-colors"

@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { setUser } from "@/lib/redux/slices/authSlice";
-import axiosInstance from "@/lib/axios";
+import { login } from "@/lib/redux/slices/authSlice";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function LoginPage() {
@@ -23,53 +22,16 @@ export default function LoginPage() {
 
     try {
       console.log('📤 Sending login request...');
-      const response = await axiosInstance.post('/auth/login', { email, password });
-      console.log('✅ Response received:', response.data);
+      const result = await dispatch(login({ email, password }));
 
-      const data = response.data.data || response.data; // Handle both formats
-      const userData = data.user;
-      const access_token = data.access_token;
-      const refresh_token = data.refresh_token;
-
-      console.log('📦 Extracted data:', {
-        hasUser: !!userData,
-        hasAccessToken: !!access_token,
-        hasRefreshToken: !!refresh_token,
-        userEmail: userData?.email
-      });
-
-      if (userData && access_token && refresh_token) {
-        console.log('💾 Storing in localStorage...');
-
-        // Store directly in localStorage FIRST before dispatch
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('access_token', access_token);
-        localStorage.setItem('refresh_token', refresh_token);
-
-        console.log('✅ Data stored in localStorage');
-
-        // Then dispatch to Redux
-        dispatch(setUser({
-          user: userData,
-          accessToken: access_token,
-          refreshToken: refresh_token
-        }));
-
-        console.log('✅ Data stored in Redux');
-        console.log('Check localStorage:', {
-          token: localStorage.getItem('access_token')?.substring(0, 20),
-          refresh: localStorage.getItem('refresh_token')?.substring(0, 20),
-          user: localStorage.getItem('user')?.substring(0, 50)
-        });
-
+      if (login.fulfilled.match(result)) {
         console.log('🔄 Redirecting...');
-        // Small delay to ensure storage is complete
         setTimeout(() => {
           window.location.href = '/';
         }, 100);
       } else {
-        console.error('❌ Missing data in response');
-        setError(t.auth.errorGeneric);
+        const message = (result.payload as string) || t.auth.errorGeneric;
+        setError(message);
       }
     } catch (err: any) {
       console.error('❌ Login error:', err.response?.data || err.message);

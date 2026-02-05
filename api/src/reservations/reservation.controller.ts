@@ -31,6 +31,11 @@ export class ReservationController {
     return this.reservationService.findByUser(req.user.id);
   }
 
+  @Get(':id/ticket')
+  getTicket(@Param('id') id: string, @Request() req) {
+    return this.reservationService.getTicketUrl(id, req.user);
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.reservationService.findById(id);

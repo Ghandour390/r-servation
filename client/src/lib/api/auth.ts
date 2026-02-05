@@ -1,5 +1,4 @@
 import axiosInstance from '../axios';
-import Cookies from 'js-cookie';
 
 export interface RegisterData {
   email: string;
@@ -37,6 +36,7 @@ export interface AuthResponse {
     email: string;
     firstName: string;
     lastName: string;
+    avatarUrl?: string;
     role: string;
   };
 }
@@ -64,18 +64,7 @@ export const authApi = {
   login: async (data: LoginData): Promise<AuthResponse> => {
     const response = await axiosInstance.post('/auth/login', data);
     const authData = response.data.data || response.data;
-    
-    // Store tokens in cookies immediately after successful login
-    if (typeof window !== 'undefined' && authData.access_token) {
-      Cookies.set('access_token', authData.access_token, { expires: 7 });
-      if (authData.refresh_token) {
-        Cookies.set('refresh_token', authData.refresh_token, { expires: 7 });
-      }
-      if (authData.user) {
-        Cookies.set('user', JSON.stringify(authData.user), { expires: 7 });
-      }
-    }
-    
+
     return authData;
   },
 

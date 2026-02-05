@@ -11,6 +11,7 @@ import { MailModule } from './mail/mail.module';
 import { MinioModule } from './minio/minio.module';
 import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     EventsModule,
     ReservationsModule,
+    TicketsModule,
     AdminModule,
     MailModule,
     MinioModule,
