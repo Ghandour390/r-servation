@@ -49,9 +49,12 @@ describe('AllExceptionsFilter', () => {
   let mockResponse: any;
   let mockRequest: any;
   let mockHost: ArgumentsHost;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     filter = new AllExceptionsFilter();
+    // Silence expected logging during the test.
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
@@ -65,6 +68,10 @@ describe('AllExceptionsFilter', () => {
         getRequest: () => mockRequest,
       }),
     } as ArgumentsHost;
+  });
+
+  afterEach(() => {
+    consoleErrorSpy?.mockRestore();
   });
 
   it('should be defined', () => {

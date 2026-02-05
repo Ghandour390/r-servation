@@ -1,100 +1,102 @@
-import { Test } from '@nestjs/testing';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
-import { ReservationRepository } from './reservation.repository';
-import { EventRepository } from '../events/event.repository';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ReservationStatus, EventStatus } from '@prisma/client';
 
-describe('ReservationService', () => {
-  let service: ReservationService;
-  let reservationRepository: ReservationRepository;
-  let eventRepository: EventRepository;
-
-  const mockEvent = {
-    id: '1',
-    title: 'Test Event',
-    remainingPlaces: 10,
-    maxCapacity: 100,
-    managerId: 'admin1',
-    status: 'PUBLISHED' as EventStatus,
-    reservations: [],
-  };
-
-  const mockReservation = {
-    id: '1',
-    userId: 'user1',
-    eventId: '1',
-    status: 'PENDING' as ReservationStatus,
-    event: mockEvent,
-  };
-
-  const mockReservationRepository = {
-    create: jest.fn(),
-    findById: jest.fn(),
-    findByUserAndEvent: jest.fn(),
-    findByUserId: jest.fn(),
+describe('ReservationService (tickets)', () => {
+  const reservationRepository: any = {
     findMany: jest.fn(),
-    updateStatus: jest.fn(),
-    delete: jest.fn(),
-  };
-
-  const mockEventRepository = {
     findById: jest.fn(),
-    updateRemainingPlaces: jest.fn(),
+    findByUserId: jest.fn(),
   };
 
-  beforeEach(async () => {
-    const module = await Test.createTestingModule({
-      providers: [
-        ReservationService,
-        { provide: ReservationRepository, useValue: mockReservationRepository },
-        { provide: EventRepository, useValue: mockEventRepository },
-      ],
-    }).compile();
+  const prisma: any = {
+    reservation: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+    },
+    event: {
+      update: jest.fn(),
+      updateMany: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    $transaction: jest.fn((fn: any) => fn(prisma)),
+  };
 
-    service = module.get<ReservationService>(ReservationService);
-    reservationRepository = module.get<ReservationRepository>(ReservationRepository);
-    eventRepository = module.get<EventRepository>(EventRepository);
+  const minioService: any = {
+    refreshPresignedUrl: jest.fn(async (url: string) => url),
+    uploadTicket: jest.fn(async () => {}),
+    getObjectUrl: jest.fn(async () => 'http://minio/presigned'),
+  };
+
+  const ticketsService: any = {
+    getDownloadFileName: jest.fn(() => 'EventHub-Badge-test-ABCDE12345.pdf'),
+    getTicketDownloadUrl: jest.fn(async () => 'http://minio/download'),
+    buildBadgePdf: jest.fn(async () => Buffer.from('%PDF-1.4')),
+  };
+
+  const service = new ReservationService(reservationRepository, prisma, minioService, ticketsService);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should create reservation', async () => {
-    mockEventRepository.findById.mockResolvedValue(mockEvent);
-    mockReservationRepository.findByUserAndEvent.mockResolvedValue(null);
-    mockReservationRepository.create.mockResolvedValue(mockReservation);
+  it('blocks owner from downloading ticket if reservation not confirmed', async () => {
+    prisma.reservation.findUnique.mockResolvedValue({
+      id: 'r1',
+      userId: 'u1',
+      status: 'PENDING',
+      user: { id: 'u1', avatarUrl: 'http://minio/avatar' },
+      event: { id: 'e1', title: 'Event', managerId: 'admin1' },
+    });
 
-    const result = await service.create('user1', '1');
-    expect(result).toEqual(mockReservation);
-    expect(mockEventRepository.updateRemainingPlaces).not.toHaveBeenCalled();
+    await expect(service.getTicketUrl('r1', { id: 'u1', role: 'PARTICIPANT' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
-  it('should throw BadRequestException when no places available', async () => {
-    mockEventRepository.findById.mockResolvedValue({ ...mockEvent, remainingPlaces: 0 });
-    await expect(service.create('user1', '1')).rejects.toThrow(BadRequestException);
+  it('returns a download url if ticketKey already exists', async () => {
+    prisma.reservation.findUnique.mockResolvedValue({
+      id: 'r1',
+      userId: 'u1',
+      status: 'CONFIRMED',
+      ticketKey: 'tickets/badges-v1/r1.pdf',
+      user: { id: 'u1', avatarUrl: 'http://minio/avatar' },
+      event: { id: 'e1', title: 'My Event', managerId: 'admin1' },
+    });
+
+    const res = await service.getTicketUrl('r1', { id: 'u1', role: 'PARTICIPANT' });
+    expect(res.ticketUrl).toBe('http://minio/download');
+    expect(ticketsService.getTicketDownloadUrl).toHaveBeenCalledWith('tickets/badges-v1/r1.pdf', expect.any(String));
+    expect(minioService.uploadTicket).not.toHaveBeenCalled();
   });
 
-  it('should throw BadRequestException when already reserved', async () => {
-    mockEventRepository.findById.mockResolvedValue(mockEvent);
-    mockReservationRepository.findByUserAndEvent.mockResolvedValue(mockReservation);
-    await expect(service.create('user1', '1')).rejects.toThrow(BadRequestException);
+  it('requires avatarUrl before generating a ticket', async () => {
+    prisma.reservation.findUnique.mockResolvedValue({
+      id: 'r1',
+      userId: 'u1',
+      status: 'CONFIRMED',
+      ticketKey: null,
+      user: { id: 'u1', avatarUrl: null },
+      event: { id: 'e1', title: 'My Event', managerId: 'admin1' },
+    });
+
+    await expect(service.getTicketUrl('r1', { id: 'u1', role: 'PARTICIPANT' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
-  it('should delete reservation and restore capacity if it was confirmed', async () => {
-    const confirmedReservation = { ...mockReservation, status: 'CONFIRMED' as ReservationStatus };
-    mockReservationRepository.findById.mockResolvedValue(confirmedReservation);
-    mockReservationRepository.delete.mockResolvedValue(confirmedReservation);
+  it('forbids non-owner/non-manager/non-admin', async () => {
+    prisma.reservation.findUnique.mockResolvedValue({
+      id: 'r1',
+      userId: 'owner1',
+      status: 'CONFIRMED',
+      ticketKey: null,
+      user: { id: 'owner1', avatarUrl: 'http://minio/avatar' },
+      event: { id: 'e1', title: 'My Event', managerId: 'manager1' },
+    });
 
-    await service.delete('1', 'user1');
-    expect(mockReservationRepository.delete).toHaveBeenCalledWith('1');
-    expect(mockEventRepository.updateRemainingPlaces).toHaveBeenCalledWith('1', 11);
-  });
-
-  it('should update status and decrease capacity if confirmed', async () => {
-    mockReservationRepository.findById.mockResolvedValue(mockReservation);
-    mockReservationRepository.updateStatus.mockResolvedValue({ ...mockReservation, status: 'CONFIRMED' as ReservationStatus });
-    mockEventRepository.findById.mockResolvedValue(mockEvent);
-
-    const result = await service.updateStatus('1', 'CONFIRMED', 'admin1');
-    expect(result.status).toBe('CONFIRMED');
-    expect(mockEventRepository.updateRemainingPlaces).toHaveBeenCalledWith('1', 9);
+    await expect(service.getTicketUrl('r1', { id: 'other', role: 'PARTICIPANT' })).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 });
+

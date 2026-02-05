@@ -1,16 +1,15 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ReservationService } from '../reservations/reservation.service';
+import { TicketsService } from './tickets.service';
 
 @Controller('tickets')
 export class TicketsController {
-  constructor(private reservationService: ReservationService) {}
+  constructor(private ticketsService: TicketsService) {}
 
   @Get('verify/:reservationId')
   verify(
     @Param('reservationId') reservationId: string,
     @Query('sig') sig?: string,
   ) {
-    return this.reservationService.verifyTicket(reservationId, sig);
+    return this.ticketsService.verifyTicket(reservationId, sig);
   }
 }
-

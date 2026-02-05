@@ -10,6 +10,17 @@ export class EventService {
     private minioService: MinioService,
   ) { }
 
+  /**
+   * Internal fetch for manager operations (update/delete/publish/cancel).
+   * Unlike `findById`, this must NOT hide non-published events because managers
+   * should be able to manage their drafts.
+   */
+  private async findByIdForManagement(id: string): Promise<Event> {
+    const event = await this.eventRepository.findById(id);
+    if (!event) throw new NotFoundException('Event not found');
+    return event;
+  }
+
   private async withFreshImageUrl(event: Event): Promise<Event> {
     if (!event.imageUrl) return event;
     const refreshedUrl = await this.minioService.refreshPresignedUrl(
@@ -101,13 +112,13 @@ export class EventService {
   }
 
   async update(id: string, data: Partial<Event>, userId: string): Promise<Event> {
-    const event = await this.findById(id);
+    const event = await this.findByIdForManagement(id);
     if (event.managerId !== userId) throw new ForbiddenException('Not authorized');
     return this.eventRepository.update(id, data);
   }
 
   async delete(id: string, userId: string): Promise<Event> {
-    const event = await this.findById(id);
+    const event = await this.findByIdForManagement(id);
     if (event.managerId !== userId) throw new ForbiddenException('Not authorized');
     return this.eventRepository.delete(id);
   }

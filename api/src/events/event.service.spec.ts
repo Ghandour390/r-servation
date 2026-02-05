@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { EventService } from './event.service';
 import { EventRepository } from './event.repository';
+import { MinioService } from '../minio/minio.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EventStatus } from '@prisma/client';
 
@@ -30,11 +31,16 @@ describe('EventService', () => {
     delete: jest.fn(),
   };
 
+  const mockMinioService = {
+    refreshPresignedUrl: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [
         EventService,
         { provide: EventRepository, useValue: mockRepository },
+        { provide: MinioService, useValue: mockMinioService },
       ],
     }).compile();
 
