@@ -37,7 +37,10 @@ export class TicketsService {
   }
 
   signTicket(reservationId: string): string {
-    const secret = process.env.TICKET_SIGNING_SECRET ?? 'dev_ticket_signing_secret';
+    const secret = process.env.TICKET_SIGNING_SECRET;
+    if (!secret) {
+      throw new BadRequestException('TICKET_SIGNING_SECRET is not configured');
+    }
     const digest = crypto.createHmac('sha256', secret).update(reservationId).digest();
     return this.toBase64Url(digest);
   }

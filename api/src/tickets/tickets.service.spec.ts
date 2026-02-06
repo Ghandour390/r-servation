@@ -13,6 +13,10 @@ describe('TicketsService', () => {
     getObjectDownloadUrl: jest.fn(async () => 'http://minio/download'),
   };
 
+  beforeAll(() => {
+    process.env.TICKET_SIGNING_SECRET = 'test_ticket_signing_secret';
+  });
+
   const service = new TicketsService(prisma, minioService);
 
   beforeEach(() => {
