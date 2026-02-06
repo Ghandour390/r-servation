@@ -21,6 +21,8 @@ export default function AdminCategoriesPage() {
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [formData, setFormData] = useState({ name: '', description: '' })
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
   const [editModal, setEditModal] = useState<{ isOpen: boolean; category: Category | null }>({
     isOpen: false,
     category: null,
@@ -52,10 +54,20 @@ export default function AdminCategoriesPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name || !formData.description) return
+    const name = formData.name.trim()
+    const description = formData.description.trim()
+    if (name.length < 2) {
+      setCreateError('Category name must be at least 2 characters.')
+      return
+    }
+    if (description.length < 5) {
+      setCreateError('Category description must be at least 5 characters.')
+      return
+    }
+    setCreateError(null)
     setActionLoading(true)
     try {
-      const result = await createCategoryAction(formData)
+      const result = await createCategoryAction({ name, description })
       if (result.success && result.data) {
         setCategories((prev) => [...prev, result.data!])
         setFormData({ name: '', description: '' })
@@ -72,11 +84,22 @@ export default function AdminCategoriesPage() {
   const handleEditSave = async (e?: React.FormEvent) => {
     e?.preventDefault()
     if (!editModal.category) return
+    const name = editModal.category.name.trim()
+    const description = editModal.category.description.trim()
+    if (name.length < 2) {
+      setEditError('Category name must be at least 2 characters.')
+      return
+    }
+    if (description.length < 5) {
+      setEditError('Category description must be at least 5 characters.')
+      return
+    }
+    setEditError(null)
     setActionLoading(true)
     try {
       const result = await updateCategoryAction(editModal.category.id, {
-        name: editModal.category.name,
-        description: editModal.category.description,
+        name,
+        description,
       })
       if (result.success && result.data) {
         setCategories((prev) => prev.map((c) => (c.id === result.data!.id ? result.data! : c)))
@@ -175,15 +198,24 @@ export default function AdminCategoriesPage() {
             <span>{t.categories?.add || 'Add'}</span>
           </button>
         </div>
+        {createError && (
+          <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm">
+            {createError}
+          </div>
+        )}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="form-label">{t.categories?.name || 'Name'}</label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => {
+                setCreateError(null)
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }}
               className="form-input"
               placeholder={t.categories?.namePlaceholder || 'Category name'}
+              minLength={2}
               required
             />
           </div>
@@ -192,9 +224,13 @@ export default function AdminCategoriesPage() {
             <input
               type="text"
               value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => {
+                setCreateError(null)
+                setFormData((prev) => ({ ...prev, description: e.target.value }))
+              }}
               className="form-input"
               placeholder={t.categories?.descriptionPlaceholder || 'Category description'}
+              minLength={5}
               required
             />
           </div>
@@ -225,7 +261,10 @@ export default function AdminCategoriesPage() {
       {editModal.isOpen && editModal.category && (
         <ConfirmModal
           isOpen={editModal.isOpen}
-          onClose={() => setEditModal({ isOpen: false, category: null })}
+          onClose={() => {
+            setEditError(null)
+            setEditModal({ isOpen: false, category: null })
+          }}
           onConfirm={handleEditSave}
           title={t.categories?.editTitle || 'Edit Category'}
           message=""
@@ -233,6 +272,11 @@ export default function AdminCategoriesPage() {
           variant="info"
           isLoading={actionLoading}
         >
+          {editError && (
+            <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm">
+              {editError}
+            </div>
+          )}
           <form onSubmit={handleEditSave} className="space-y-4">
             <div>
               <label className="form-label">{t.categories?.name || 'Name'}</label>
@@ -240,12 +284,16 @@ export default function AdminCategoriesPage() {
                 type="text"
                 value={editModal.category.name}
                 onChange={(e) =>
-                  setEditModal((prev) => ({
-                    ...prev,
-                    category: prev.category ? { ...prev.category, name: e.target.value } : prev.category,
-                  }))
+                  {
+                    setEditError(null)
+                    setEditModal((prev) => ({
+                      ...prev,
+                      category: prev.category ? { ...prev.category, name: e.target.value } : prev.category,
+                    }))
+                  }
                 }
                 className="form-input"
+                minLength={2}
                 required
               />
             </div>
@@ -255,12 +303,16 @@ export default function AdminCategoriesPage() {
                 type="text"
                 value={editModal.category.description}
                 onChange={(e) =>
-                  setEditModal((prev) => ({
-                    ...prev,
-                    category: prev.category ? { ...prev.category, description: e.target.value } : prev.category,
-                  }))
+                  {
+                    setEditError(null)
+                    setEditModal((prev) => ({
+                      ...prev,
+                      category: prev.category ? { ...prev.category, description: e.target.value } : prev.category,
+                    }))
+                  }
                 }
                 className="form-input"
+                minLength={5}
                 required
               />
             </div>

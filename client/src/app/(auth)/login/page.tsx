@@ -15,14 +15,27 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateInputs = () => {
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
+    if (password.length < 8) return "Password must be at least 8 characters.";
+    return "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setError("");
     setLoading(true);
 
     try {
       console.log('📤 Sending login request...');
-      const result = await dispatch(login({ email, password }));
+      const result = await dispatch(login({ email: email.trim(), password }));
 
       if (login.fulfilled.match(result)) {
         console.log('🔄 Redirecting...');
@@ -83,6 +96,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder={t.auth.passwordPlaceholder}
+                  minLength={8}
                   required
                 />
                 <button

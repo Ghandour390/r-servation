@@ -17,14 +17,40 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateInputs = () => {
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedEmail = email.trim();
+
+    if (trimmedLastName.length < 2) return "Last name must be at least 2 characters.";
+    if (trimmedFirstName.length < 2) return "First name must be at least 2 characters.";
+
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
+    if (password.length < 8) return "Password must be at least 8 characters.";
+
+    return "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setError("");
     setLoading(true);
 
     try {
-      await authApi.register({ lastName, firstName, email, password });
-      localStorage.setItem("email", email);
+      const normalized = {
+        lastName: lastName.trim(),
+        firstName: firstName.trim(),
+        email: email.trim(),
+        password,
+      };
+      await authApi.register(normalized);
+      localStorage.setItem("email", normalized.email);
       router.push("/verification-email");
     } catch (err: any) {
       setError(err.response?.data?.message || t.auth.errorRegister);
@@ -68,6 +94,7 @@ export default function RegisterPage() {
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder={t.auth.lastNamePlaceholder}
+                minLength={2}
                 required
               />
             </div>
@@ -83,6 +110,7 @@ export default function RegisterPage() {
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder={t.auth.firstNamePlaceholder}
+                minLength={2}
                 required
               />
             </div>
@@ -114,6 +142,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder={t.auth.passwordPlaceholder}
+                  minLength={8}
                   required
                 />
                 <button

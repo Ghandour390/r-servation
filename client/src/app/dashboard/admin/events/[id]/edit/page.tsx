@@ -35,6 +35,21 @@ export default function EditEventPage() {
     const [categories, setCategories] = useState<Category[]>([])
     const { t } = useTranslation()
 
+    const validateInputs = () => {
+        const title = formData.title?.trim() || ''
+        const description = formData.description?.trim() || ''
+        const location = formData.location?.trim() || ''
+
+        if (title.length < 3) return 'Event title must be at least 3 characters.'
+        if (description.length < 10) return 'Description must be at least 10 characters.'
+        if (!formData.dateTime) return 'Please select a date and time.'
+        if (Number.isNaN(new Date(formData.dateTime).getTime())) return 'Please select a valid date.'
+        if ((formData.maxCapacity || 0) < 1) return 'Maximum capacity must be at least 1.'
+        if (location.length < 2) return 'Location must be at least 2 characters.'
+
+        return ''
+    }
+
     useEffect(() => {
         const fetchEvent = async () => {
             try {
@@ -81,15 +96,20 @@ export default function EditEventPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        const validationError = validateInputs()
+        if (validationError) {
+            setError(validationError)
+            return
+        }
         setError(null)
         setSaving(true)
 
         try {
             const submitData = new FormData()
-            if (formData.title) submitData.append('title', formData.title)
-            if (formData.description) submitData.append('description', formData.description)
+            if (formData.title) submitData.append('title', formData.title.trim())
+            if (formData.description) submitData.append('description', formData.description.trim())
             if (formData.dateTime) submitData.append('dateTime', new Date(formData.dateTime).toISOString())
-            if (formData.location) submitData.append('location', formData.location)
+            if (formData.location) submitData.append('location', formData.location.trim())
             if (formData.maxCapacity) submitData.append('maxCapacity', formData.maxCapacity.toString())
             if (formData.categoryId !== undefined) {
                 submitData.append('categoryId', formData.categoryId || '')
@@ -180,6 +200,7 @@ export default function EditEventPage() {
                         onChange={handleChange}
                         className="form-input"
                         placeholder="Enter event title"
+                        minLength={3}
                         required
                     />
                 </div>
@@ -195,6 +216,7 @@ export default function EditEventPage() {
                         onChange={handleChange}
                         className="form-input min-h-32"
                         placeholder="Describe your event..."
+                        minLength={10}
                         required
                     />
                 </div>
@@ -244,6 +266,7 @@ export default function EditEventPage() {
                         onChange={handleChange}
                         className="form-input"
                         placeholder="Enter event location"
+                        minLength={2}
                         required
                     />
                 </div>

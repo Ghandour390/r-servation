@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { getProfileAction, updateProfileAction, uploadAvatarAction, User, UpdateProfileData } from '@/lib/actions/users'
@@ -106,12 +106,39 @@ export default function DashboardProfilePage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        const trimmedFirstName = formData.firstName.trim()
+        const trimmedLastName = formData.lastName.trim()
+        const trimmedEmail = formData.email.trim()
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+        if (trimmedFirstName.length < 2) {
+            setError('First name must be at least 2 characters.')
+            return
+        }
+        if (trimmedLastName.length < 2) {
+            setError('Last name must be at least 2 characters.')
+            return
+        }
+        if (!emailRegex.test(trimmedEmail)) {
+            setError('Please enter a valid email address.')
+            return
+        }
+        if (formData.password && formData.password.length < 8) {
+            setError('Password must be at least 8 characters.')
+            return
+        }
+
         setUpdating(true)
         setError(null)
         setSuccess(null)
 
         try {
-            const dataToUpdate = { ...formData }
+            const dataToUpdate = {
+                ...formData,
+                firstName: trimmedFirstName,
+                lastName: trimmedLastName,
+                email: trimmedEmail,
+            }
             if (!dataToUpdate.password) delete dataToUpdate.password
 
             const result = await updateProfileAction(dataToUpdate)
@@ -210,6 +237,8 @@ export default function DashboardProfilePage() {
                                             value={formData.firstName}
                                             onChange={handleChange}
                                             className="block w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-transparent rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-primary"
+                                            minLength={2}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -223,6 +252,8 @@ export default function DashboardProfilePage() {
                                             value={formData.lastName}
                                             onChange={handleChange}
                                             className="block w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-transparent rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-primary"
+                                            minLength={2}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -238,6 +269,7 @@ export default function DashboardProfilePage() {
                                         value={formData.email}
                                         onChange={handleChange}
                                         className="block w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-transparent rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-primary"
+                                        required
                                     />
                                 </div>
                             </div>
@@ -250,7 +282,8 @@ export default function DashboardProfilePage() {
                                     value={formData.password}
                                     onChange={handleChange}
                                     className="block w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-transparent rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-primary"
-                                    placeholder="••••••••"
+                                    minLength={8}
+                                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
                                 />
                             </div>
 
@@ -282,3 +315,4 @@ export default function DashboardProfilePage() {
         </div>
     )
 }
+
