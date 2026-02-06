@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, StreamableFile, Param } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -13,5 +13,14 @@ export class AdminController {
     @Get('stats')
     async getStats() {
         return this.adminService.getStats();
+    }
+
+    @Get('events/:eventId/participants/pdf')
+    async exportEventParticipants(@Param('eventId') eventId: string) {
+        const { buffer, fileName } = await this.adminService.exportEventParticipantsPdf(eventId);
+        return new StreamableFile(buffer, {
+            type: 'application/pdf',
+            disposition: `attachment; filename="${fileName.replace(/"/g, "'")}"`,
+        });
     }
 }

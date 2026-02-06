@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import sharp from 'sharp';
 
 @Injectable()
 export class TicketsService {
@@ -51,6 +52,12 @@ export class TicketsService {
     return `EventHub-Badge-${eventSlug}-${badgeIdShort}.pdf`;
   }
 
+  getParticipantsDownloadFileName(eventTitle?: string): string {
+    const eventSlug = this.slugify(String(eventTitle ?? 'event'));
+    const datePart = new Date().toISOString().slice(0, 10);
+    return `EventHub-Participants-${eventSlug}-${datePart}.pdf`;
+  }
+
   async getTicketDownloadUrl(ticketKey: string, downloadFileName: string): Promise<string> {
     return this.minioService.getObjectDownloadUrl(ticketKey, 24 * 60 * 60, downloadFileName, 'application/pdf');
   }
@@ -63,11 +70,23 @@ export class TicketsService {
         const response = await fetch(source);
         if (!response.ok) return null;
         const arrayBuffer = await response.arrayBuffer();
-        return Buffer.from(arrayBuffer);
+        const raw = Buffer.from(arrayBuffer);
+        const normalized = await this.normalizeImageBuffer(raw);
+        return normalized ?? raw;
       }
 
       const filePath = path.isAbsolute(source) ? source : path.resolve(process.cwd(), source);
-      return await fs.readFile(filePath);
+      const raw = await fs.readFile(filePath);
+      const normalized = await this.normalizeImageBuffer(raw);
+      return normalized ?? raw;
+    } catch {
+      return null;
+    }
+  }
+
+  private async normalizeImageBuffer(buffer: Buffer): Promise<Buffer | null> {
+    try {
+      return await sharp(buffer).png().toBuffer();
     } catch {
       return null;
     }
@@ -310,18 +329,220 @@ export class TicketsService {
           .text('Scan to verify', bannerX, qrY + qrSize + 6, { width: bannerW, align: 'center' });
 
         // Security footer
-        const micro = `EVENTHUB|${sigShort}|${badgeIdShort}|`;
+        const microToken = `EVENTHUB|${sigShort}|${badgeIdShort}|`;
+        const microMaxW = cardW - pad * 2;
         doc.save();
         doc.opacity(0.8);
-        doc
-          .fillColor('#9ca3af')
-          .fontSize(6)
-          .font('Helvetica')
-          .text(micro.repeat(14), cardX + pad, cardY + cardH - 18, { width: cardW - pad * 2, align: 'center' });
+        doc.fillColor('#9ca3af').fontSize(6).font('Helvetica');
+        let microText = '';
+        while (doc.widthOfString(microText + microToken) <= microMaxW) {
+          microText += microToken;
+        }
+        if (!microText) microText = microToken;
+        doc.text(microText, cardX + pad, cardY + cardH - 18, {
+          width: microMaxW,
+          align: 'center',
+          lineBreak: false,
+        });
         doc.restore();
 
         doc.fillColor('#6b7280').fontSize(9).font('Helvetica').text(`Badge ID: ${badgeIdShort}`, cardX + pad, cardY + cardH - 48);
         doc.fillColor('#6b7280').fontSize(8).font('Helvetica').text(`SIG: ${sigShort}`, cardX + pad, cardY + cardH - 34);
+
+        doc.end();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  private getInitials(firstName?: string, lastName?: string): string {
+    const first = String(firstName ?? '').trim().charAt(0);
+    const last = String(lastName ?? '').trim().charAt(0);
+    return (first + last).toUpperCase() || 'P';
+  }
+
+  async buildParticipantsListPdf(
+    event: any,
+    participants: Array<{ firstName?: string; lastName?: string; email?: string; avatarUrl?: string | null }>,
+    eventImageUrl?: string,
+  ): Promise<Buffer> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const doc = new PDFDocument({ size: 'A4', margin: 36 });
+        const chunks: Buffer[] = [];
+
+        doc.on('data', (chunk) => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', (err) => reject(err));
+
+        const pageW = doc.page.width;
+        const pageH = doc.page.height;
+        const margin = 36;
+        const contentW = pageW - margin * 2;
+        const headerH = 96;
+        const tableHeaderH = 26;
+        const rowH = 56;
+        const colAvatarW = 60;
+        const colLastW = 150;
+        const colFirstW = 150;
+        const colEmailW = Math.max(120, contentW - colAvatarW - colLastW - colFirstW);
+        const headerImageW = 120;
+        const headerImageH = 68;
+        const headerImageX = pageW - margin - headerImageW;
+        const headerImageY = 14;
+
+        const title = String(event?.title ?? 'Event');
+        const dateValue = event?.dateTime ? new Date(event.dateTime).toLocaleString() : '';
+        const locationValue = String(event?.location ?? '');
+        const meta = [dateValue, locationValue].filter(Boolean).join(' • ');
+        const countLabel = `${participants.length} confirmed participant${participants.length === 1 ? '' : 's'}`;
+
+        const drawHeader = () => {
+          doc.rect(0, 0, pageW, headerH).fill('#111827');
+          doc.fillColor('#ffffff').fontSize(18).font('Helvetica-Bold').text('EventHub', margin, 20);
+          doc.fillColor('#c7d2fe').fontSize(10).font('Helvetica').text('Confirmed Participants', margin, 42);
+          const titleMaxW = contentW - headerImageW - 12;
+          doc.fillColor('#ffffff').fontSize(13).font('Helvetica-Bold').text(title, margin, 58, { width: titleMaxW });
+          if (meta) {
+            doc.fillColor('#9ca3af').fontSize(9).font('Helvetica').text(meta, margin, 76, { width: titleMaxW });
+          }
+          doc.fillColor('#a5b4fc').fontSize(9).font('Helvetica').text(countLabel, margin, 88, { width: titleMaxW });
+
+          doc.save();
+          doc.roundedRect(headerImageX, headerImageY, headerImageW, headerImageH, 10).clip();
+          doc.rect(headerImageX, headerImageY, headerImageW, headerImageH).fill('#0f172a');
+          doc.restore();
+        };
+
+        const drawHeaderImageFallback = (label: string) => {
+          doc.save();
+          doc.roundedRect(headerImageX, headerImageY, headerImageW, headerImageH, 10).clip();
+          doc.rect(headerImageX, headerImageY, headerImageW, headerImageH).fill('#1f2937');
+          doc.rect(headerImageX, headerImageY + headerImageH * 0.55, headerImageW, headerImageH * 0.45).fill('#0f172a');
+          doc.restore();
+          doc
+            .fillColor('#e5e7eb')
+            .fontSize(8)
+            .font('Helvetica-Bold')
+            .text(label, headerImageX + 8, headerImageY + headerImageH - 18, { width: headerImageW - 16, ellipsis: true });
+        };
+
+        const drawTableHeader = (y: number) => {
+          doc.rect(margin, y, contentW, tableHeaderH).fill('#e5e7eb');
+          doc.fillColor('#111827').fontSize(9).font('Helvetica-Bold');
+          doc.text('Avatar', margin + 8, y + 8);
+          doc.text('Last name', margin + colAvatarW + 8, y + 8);
+          doc.text('First name', margin + colAvatarW + colLastW + 8, y + 8);
+          doc.text('Email', margin + colAvatarW + colLastW + colFirstW + 8, y + 8);
+          doc.strokeColor('#d1d5db').lineWidth(1).rect(margin, y, contentW, tableHeaderH).stroke();
+          return y + tableHeaderH;
+        };
+
+        drawHeader();
+
+        const fallbackEventImage = process.env.TICKET_FALLBACK_IMAGE_PATH || 'assets/event.avif';
+        const eventImageBuffer =
+          (await this.loadImageBuffer(eventImageUrl)) || (await this.loadImageBuffer(fallbackEventImage));
+        let imageDrawn = false;
+        if (eventImageBuffer) {
+          try {
+            doc.save();
+            doc.roundedRect(headerImageX, headerImageY, headerImageW, headerImageH, 10).clip();
+            doc.image(eventImageBuffer, headerImageX, headerImageY, {
+              fit: [headerImageW, headerImageH],
+              align: 'center',
+              valign: 'center',
+            });
+            doc.restore();
+            imageDrawn = true;
+          } catch {
+            // Keep fallback dark block if image fails
+          }
+        }
+        if (!imageDrawn) {
+          drawHeaderImageFallback(title);
+        }
+
+        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold').text('Participants', margin, headerH + 8);
+        let cursorY = drawTableHeader(headerH + 24);
+
+        if (participants.length === 0) {
+          doc
+            .fillColor('#6b7280')
+            .fontSize(12)
+            .font('Helvetica')
+            .text('No confirmed participants for this event.', margin, cursorY + 30, { width: contentW });
+          doc.end();
+          return;
+        }
+
+        for (let i = 0; i < participants.length; i += 1) {
+          const participant = participants[i];
+          if (cursorY + rowH > pageH - margin) {
+            doc.addPage();
+            drawHeader();
+            cursorY = drawTableHeader(headerH + 16);
+          }
+
+          const rowBg = i % 2 === 0 ? '#ffffff' : '#f3f4f6';
+          doc.rect(margin, cursorY, contentW, rowH).fill(rowBg);
+          doc.strokeColor('#e5e7eb').lineWidth(1).rect(margin, cursorY, contentW, rowH).stroke();
+
+          const avatarCX = margin + colAvatarW / 2;
+          const avatarCY = cursorY + rowH / 2;
+          const avatarR = 18;
+          const avatarBuffer = await this.loadImageBuffer(participant.avatarUrl ?? undefined);
+
+          if (avatarBuffer) {
+            try {
+              doc.save();
+              doc.circle(avatarCX, avatarCY, avatarR).clip();
+              doc.image(avatarBuffer, avatarCX - avatarR, avatarCY - avatarR, {
+                width: avatarR * 2,
+                height: avatarR * 2,
+              });
+              doc.restore();
+            } catch {
+              doc.circle(avatarCX, avatarCY, avatarR).fill('#6366f1');
+              doc
+                .fillColor('#ffffff')
+                .fontSize(10)
+                .font('Helvetica-Bold')
+                .text(this.getInitials(participant.firstName, participant.lastName), avatarCX - avatarR, avatarCY - 5, {
+                  width: avatarR * 2,
+                  align: 'center',
+                });
+            }
+          } else {
+            doc.circle(avatarCX, avatarCY, avatarR).fill('#6366f1');
+            doc
+              .fillColor('#ffffff')
+              .fontSize(10)
+              .font('Helvetica-Bold')
+              .text(this.getInitials(participant.firstName, participant.lastName), avatarCX - avatarR, avatarCY - 5, {
+                width: avatarR * 2,
+                align: 'center',
+              });
+          }
+          doc.circle(avatarCX, avatarCY, avatarR).lineWidth(1).stroke('#e5e7eb');
+
+          doc.fillColor('#111827').fontSize(10).font('Helvetica');
+          doc.text(String(participant.lastName ?? ''), margin + colAvatarW + 8, cursorY + 20, {
+            width: colLastW - 16,
+            ellipsis: true,
+          });
+          doc.text(String(participant.firstName ?? ''), margin + colAvatarW + colLastW + 8, cursorY + 20, {
+            width: colFirstW - 16,
+            ellipsis: true,
+          });
+          doc.text(String(participant.email ?? ''), margin + colAvatarW + colLastW + colFirstW + 8, cursorY + 20, {
+            width: colEmailW - 16,
+            ellipsis: true,
+          });
+
+          cursorY += rowH;
+        }
 
         doc.end();
       } catch (error) {

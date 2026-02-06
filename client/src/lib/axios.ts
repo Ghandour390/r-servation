@@ -121,6 +121,17 @@ axiosInstance.interceptors.response.use(
 
         if (responseData.user) {
           Cookies.set('user', JSON.stringify(responseData.user), { expires: 7 });
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('auth:refresh', {
+                detail: {
+                  user: responseData.user,
+                  accessToken: access_token,
+                  refreshToken: newRefreshToken || refreshToken || '',
+                },
+              })
+            );
+          }
         }
 
         processQueue(null, access_token);
@@ -133,6 +144,7 @@ axiosInstance.interceptors.response.use(
           Cookies.remove('access_token');
           Cookies.remove('refresh_token');
           Cookies.remove('user');
+          window.dispatchEvent(new CustomEvent('auth:clear'));
           window.location.href = '/login';
         }
 

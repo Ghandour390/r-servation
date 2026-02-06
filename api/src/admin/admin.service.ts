@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MinioService } from '../minio/minio.service';
+import { TicketsService } from '../tickets/tickets.service';
 
 @Injectable()
 export class AdminService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private minioService: MinioService,
+        private ticketsService: TicketsService,
+    ) { }
 
     async getStats() {
         console.log('Fetching statistics...');
@@ -67,5 +73,44 @@ export class AdminService {
             })),
             upcomingEvents,
         };
+    }
+
+    async exportEventParticipantsPdf(eventId: string) {
+        const event = await this.prisma.event.findUnique({
+            where: { id: eventId },
+            include: {
+                reservations: {
+                    where: { status: 'CONFIRMED' },
+                    include: { user: true },
+                },
+            },
+        }) as any;
+
+        if (!event) {
+            throw new NotFoundException('Event not found');
+        }
+
+        const refreshedEventImageUrl = event.imageUrl
+            ? await this.minioService.refreshPresignedUrl(event.imageUrl, 60 * 60)
+            : undefined;
+
+        const participants = await Promise.all(
+            (event.reservations || []).map(async (reservation: any) => {
+                const avatarUrl = reservation.user?.avatarUrl
+                    ? await this.minioService.refreshPresignedUrl(reservation.user.avatarUrl, 60 * 60)
+                    : null;
+                return {
+                    firstName: reservation.user?.firstName,
+                    lastName: reservation.user?.lastName,
+                    email: reservation.user?.email,
+                    avatarUrl,
+                };
+            }),
+        );
+
+        const buffer = await this.ticketsService.buildParticipantsListPdf(event, participants, refreshedEventImageUrl);
+        const fileName = this.ticketsService.getParticipantsDownloadFileName(event.title);
+
+        return { buffer, fileName };
     }
 }

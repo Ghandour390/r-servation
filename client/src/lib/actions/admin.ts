@@ -1,5 +1,3 @@
-'use server'
-
 import axiosInstance from '../axios'
 import { getCurrentUser } from './auth'
 
@@ -40,6 +38,12 @@ export interface StatsResponse {
 export interface ExportResponse {
     success: boolean
     data?: string // CSV or JSON string
+    error?: string
+}
+
+export interface ExportPdfResponse {
+    success: boolean
+    data?: ArrayBuffer
     error?: string
 }
 
@@ -130,5 +134,25 @@ export async function exportReservationsAction(): Promise<ExportResponse> {
     } catch (error: any) {
         console.error('Export reservations error:', error.message)
         return { success: false, error: 'Failed to export data' }
+    }
+}
+
+// Export confirmed participants for a specific event as PDF (Admin only)
+export async function exportEventParticipantsPdfAction(eventId: string): Promise<ExportPdfResponse> {
+    try {
+        const user = await getCurrentUser()
+
+        if (user?.role !== 'ADMIN') {
+            return { success: false, error: 'Admin access required' }
+        }
+
+        const response = await axiosInstance.get(`/admin/events/${eventId}/participants/pdf`, {
+            responseType: 'arraybuffer',
+        })
+
+        return { success: true, data: response.data }
+    } catch (error: any) {
+        console.error('Export participants PDF error:', error.message)
+        return { success: false, error: 'Failed to export participants PDF' }
     }
 }

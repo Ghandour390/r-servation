@@ -1,5 +1,3 @@
-'use server'
-
 import axiosInstance from '../axios'
 
 export interface User {

@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { UserRepository } from './user.repository';
 import { EmailVerificationService } from '../redis/email-verification.service';
 import * as bcrypt from 'bcryptjs';
@@ -79,9 +79,10 @@ export class AuthService {
     }
 
     const payload = { sub: user.id, email: user.email, role: user.role };
+    const refreshExpiresIn = this.getRefreshExpiresIn();
     return {
       access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: refreshExpiresIn }),
       user: {
         id: user.id,
         email: user.email,
@@ -111,9 +112,10 @@ export class AuthService {
       }
 
       const newPayload = { sub: user.id, email: user.email, role: user.role };
+      const refreshExpiresIn = this.getRefreshExpiresIn();
       return {
         access_token: this.jwtService.sign(newPayload),
-        refresh_token: this.jwtService.sign(newPayload, { expiresIn: '7d' }),
+        refresh_token: this.jwtService.sign(newPayload, { expiresIn: refreshExpiresIn }),
         user: {
           id: user.id,
           email: user.email,
@@ -161,5 +163,12 @@ export class AuthService {
 
   async validateUser(userId: string): Promise<User | null> {
     return this.userRepository.findById(userId);
+  }
+
+  private getRefreshExpiresIn(): JwtSignOptions['expiresIn'] {
+    const value = process.env.JWT_REFRESH_EXPIRES_IN;
+    if (!value) return '7d';
+    if (/^\d+$/.test(value)) return Number(value);
+    return value as JwtSignOptions['expiresIn'];
   }
 }

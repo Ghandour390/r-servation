@@ -25,7 +25,7 @@ export default function RegisterPage() {
     if (trimmedLastName.length < 2) return "Last name must be at least 2 characters.";
     if (trimmedFirstName.length < 2) return "First name must be at least 2 characters.";
 
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
     if (password.length < 8) return "Password must be at least 8 characters.";
 

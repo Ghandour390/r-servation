@@ -17,7 +17,7 @@ export default function LoginPage() {
 
   const validateInputs = () => {
     const trimmedEmail = email.trim();
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
     if (password.length < 8) return "Password must be at least 8 characters.";
     return "";

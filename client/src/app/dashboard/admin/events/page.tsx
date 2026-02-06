@@ -9,7 +9,8 @@ import {
     EyeIcon,
     MegaphoneIcon,
     XCircleIcon,
-    PhotoIcon
+    PhotoIcon,
+    ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
 import DataTable from '@/components/dashboard/DataTable'
 import StatusBadge from '@/components/dashboard/StatusBadge'
@@ -22,6 +23,7 @@ import {
     cancelEventAction,
     Event
 } from '@/lib/actions/events'
+import { exportEventParticipantsPdfAction } from '@/lib/actions/admin'
 import { getCategoriesAction, Category } from '@/lib/actions/categories'
 import FilterBar from '@/components/FilterBar'
 import { useTranslation } from '@/hooks/useTranslation'
@@ -35,6 +37,7 @@ export default function AdminEventsPage() {
         event: null,
     })
     const [actionLoading, setActionLoading] = useState(false)
+    const [exportingId, setExportingId] = useState<string | null>(null)
     const [filters, setFilters] = useState({ search: '', category: '' })
     const [categories, setCategories] = useState<Category[]>([])
     const { t } = useTranslation()
@@ -121,6 +124,36 @@ export default function AdminEventsPage() {
             alert('Failed to cancel event')
         } finally {
             setActionLoading(false)
+        }
+    }
+
+    const handleExportParticipants = async (event: Event) => {
+        setExportingId(event.id)
+        setError(null)
+
+        try {
+            const result = await exportEventParticipantsPdfAction(event.id)
+            if (result.success && result.data) {
+                const blob = new Blob([result.data], { type: 'application/pdf' })
+                const url = window.URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                const safeTitle = String(event.title || 'event')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                a.href = url
+                a.download = `eventhub-participants-${safeTitle || event.id}.pdf`
+                document.body.appendChild(a)
+                a.click()
+                window.URL.revokeObjectURL(url)
+                document.body.removeChild(a)
+            } else {
+                setError(result.error || 'Failed to export participants PDF')
+            }
+        } catch (err) {
+            setError('Failed to export participants PDF')
+        } finally {
+            setExportingId(null)
         }
     }
 
@@ -220,6 +253,14 @@ export default function AdminEventsPage() {
                             <XCircleIcon className="h-4 w-4" />
                         </button>
                     )}
+                    <button
+                        onClick={() => handleExportParticipants(event)}
+                        disabled={exportingId === event.id}
+                        className="p-2 text-tertiary hover:text-indigo-600 transition-colors disabled:opacity-50"
+                        title={t.export.participantsPdf}
+                    >
+                        <ArrowDownTrayIcon className={`h-4 w-4 ${exportingId === event.id ? 'animate-pulse' : ''}`} />
+                    </button>
                     <button
                         onClick={() => setDeleteModal({ isOpen: true, event })}
                         className="p-2 text-tertiary hover:text-red-600 transition-colors"

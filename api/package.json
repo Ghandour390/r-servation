@@ -48,6 +48,7 @@
     "minio": "^8.0.6",
     "pdfkit": "^0.15.2",
     "qrcode": "^1.5.4",
+    "sharp": "^0.33.5",
     "nest-winston": "^1.10.2",
     "nodemailer": "^7.0.13",
     "passport": "^0.7.0",
