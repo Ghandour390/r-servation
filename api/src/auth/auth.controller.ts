@@ -1,6 +1,6 @@
 import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto } from './dto';
+import { RegisterDto, LoginDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto, RefreshTokenDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,7 +13,7 @@ export class AuthController {
       registerDto.password,
       registerDto.firstName,
       registerDto.lastName,
-      registerDto.role,
+      registerDto.role = "PARTICIPANT",
     );
   }
 
@@ -47,5 +47,10 @@ export class AuthController {
       resetPasswordDto.code,
       resetPasswordDto.newPassword,
     );
+  }
+
+  @Post('refresh')
+  async refresh(@Body(ValidationPipe) refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshTokens(refreshTokenDto.refresh_token);
   }
 }

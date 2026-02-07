@@ -6,14 +6,18 @@
     "dev": "next dev -p 4200",
     "build": "next build",
     "start": "next start -p 4200",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build"
   },
   "dependencies": {
+    "@heroicons/react": "^2.0.18",
     "@reduxjs/toolkit": "^2.5.0",
     "axios": "^1.7.9",
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.5",
     "next": "16.1.6",
+    "next-themes": "^0.2.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-redux": "^9.2.0",

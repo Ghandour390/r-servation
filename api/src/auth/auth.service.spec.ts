@@ -24,7 +24,7 @@ describe('AuthService', () => {
     password: 'hashedPassword',
     firstName: 'John',
     lastName: 'Doe',
-    role: Role.PARTICIPANT,
+    role: 'PARTICIPANT' as Role,
     isEmailVerified: true,
   };
 

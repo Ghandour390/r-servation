@@ -3,86 +3,63 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { setUser } from "@/lib/redux/slices/authSlice";
-import axiosInstance from "@/lib/axios";
+import { login } from "@/lib/redux/slices/authSlice";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateInputs = () => {
+    const trimmedEmail = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
+    if (password.length < 8) return "Password must be at least 8 characters.";
+    return "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setError("");
     setLoading(true);
 
     try {
       console.log('📤 Sending login request...');
-      const response = await axiosInstance.post('/auth/login', { email, password });
-      console.log('✅ Response received:', response.data);
-      
-      const data = response.data.data || response.data; // Handle both formats
-      const userData = data.user;
-      const access_token = data.access_token;
-      const refresh_token = data.refresh_token;
+      const result = await dispatch(login({ email: email.trim(), password }));
 
-      console.log('📦 Extracted data:', {
-        hasUser: !!userData,
-        hasAccessToken: !!access_token,
-        hasRefreshToken: !!refresh_token,
-        userEmail: userData?.email
-      });
-
-      if (userData && access_token && refresh_token) {
-        console.log('💾 Storing in localStorage...');
-        
-        // Store directly in localStorage FIRST before dispatch
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('access_token', access_token);
-        localStorage.setItem('refresh_token', refresh_token);
-        
-        console.log('✅ Data stored in localStorage');
-        
-        // Then dispatch to Redux
-        dispatch(setUser({
-          user: userData,
-          accessToken: access_token,
-          refreshToken: refresh_token
-        }));
-        
-        console.log('✅ Data stored in Redux');
-        console.log('Check localStorage:', {
-          token: localStorage.getItem('access_token')?.substring(0, 20),
-          refresh: localStorage.getItem('refresh_token')?.substring(0, 20),
-          user: localStorage.getItem('user')?.substring(0, 50)
-        });
-        
+      if (login.fulfilled.match(result)) {
         console.log('🔄 Redirecting...');
-        // Small delay to ensure storage is complete
         setTimeout(() => {
           window.location.href = '/';
         }, 100);
       } else {
-        console.error('❌ Missing data in response');
-        setError('Invalid response from server');
+        const message = (result.payload as string) || t.auth.errorGeneric;
+        setError(message);
       }
     } catch (err: any) {
       console.error('❌ Login error:', err.response?.data || err.message);
-      setError(err.response?.data?.message || "Email ou mot de passe incorrect");
+      setError(err.response?.data?.message || t.auth.errorLogin);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-lg shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-white text-center mb-8">
-            Sign in to your account
+        <div className="card p-8">
+          <h1 className="text-3xl font-bold text-primary text-center mb-8">
+            {t.auth.loginTitle}
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -93,23 +70,23 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
+                {t.auth.emailLabel}
               </label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your email"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder={t.auth.emailPlaceholder}
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
+              <label htmlFor="password" className="block text-sm font-medium text-secondary mb-2">
+                {t.auth.passwordLabel}
               </label>
               <div className="relative">
                 <input
@@ -117,16 +94,17 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={t.auth.passwordPlaceholder}
+                  minLength={8}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary"
                 >
-                  {showPassword ? "👁️" : "👁️‍🗨️"}
+                  {showPassword ? "👁️" : "👁️🗨️"}
                 </button>
               </div>
             </div>
@@ -134,16 +112,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Connexion..." : "Continue"}
+              {loading ? t.auth.loginLoading : t.auth.loginButton}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-400">
-            Don't have an account?{" "}
-            <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">
-              Sign up
+          <p className="mt-6 text-center text-sm text-tertiary">
+            {t.auth.noAccount}{" "}
+            <Link href="/register" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              {t.auth.signUp}
             </Link>
           </p>
         </div>

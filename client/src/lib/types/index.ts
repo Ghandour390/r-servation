@@ -1,34 +1,59 @@
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: { id: number; name: string };
-  images: { imageUrl: string }[];
-  availableQuantity: number;
-}
-
-export interface CartItem {
-  id: number;
-  product: Product;
-  quantity: number;
-}
-
-export interface Order {
-  id: number;
-  clientId: number;
-  status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'expired';
-  total: number;
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'ADMIN' | 'PARTICIPANT';
+  isEmailVerified: boolean;
   createdAt: string;
-  items: OrderItem[];
+  updatedAt: string;
 }
 
-export interface OrderItem {
-  id: number;
-  productId: number;
-  product: Product;
-  quantity: number;
-  price: number;
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  dateTime: string;
+  location: string;
+  maxCapacity: number;
+  remainingPlaces: number;
+  status: 'DRAFT' | 'PUBLISHED' | 'CANCELED';
+  managerId: string;
+  manager?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  reservations?: Reservation[];
+  _count?: {
+    reservations: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Reservation {
+  id: string;
+  userId: string;
+  eventId: string;
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELED';
+  ticketUrl?: string;
+  user?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  event?: Event;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  timestamp: string;
 }
 
 

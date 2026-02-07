@@ -15,7 +15,7 @@ describe('EventRepository', () => {
     location: 'Test Location',
     maxCapacity: 100,
     remainingPlaces: 100,
-    status: EventStatus.DRAFT,
+    status: 'DRAFT' as EventStatus,
     managerId: '1',
     createdAt: new Date(),
     updatedAt: new Date(),

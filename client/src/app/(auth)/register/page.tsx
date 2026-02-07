@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,38 +17,62 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const validateInputs = () => {
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedEmail = email.trim();
+
+    if (trimmedLastName.length < 2) return "Last name must be at least 2 characters.";
+    if (trimmedFirstName.length < 2) return "First name must be at least 2 characters.";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) return "Please enter a valid email address.";
+    if (password.length < 8) return "Password must be at least 8 characters.";
+
+    return "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setError("");
     setLoading(true);
 
     try {
-      await authApi.register({lastName, firstName, email, password });
-      localStorage.setItem("email", email);
+      const normalized = {
+        lastName: lastName.trim(),
+        firstName: firstName.trim(),
+        email: email.trim(),
+        password,
+      };
+      await authApi.register(normalized);
+      localStorage.setItem("email", normalized.email);
       router.push("/verification-email");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Email déjà utilisé");
+      setError(err.response?.data?.message || t.auth.errorRegister);
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-lg shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-white text-center mb-8">
-            Sign up for an account
+        <div className="card p-8">
+          <h1 className="text-3xl font-bold text-primary text-center mb-8">
+            {t.auth.registerTitle}
           </h1>
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-700"></div>
+              <div className="w-full border-t border-primary"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-400">or</span>
+              <span className="px-2 bg-card text-tertiary">{t.auth.orSeparator}</span>
             </div>
           </div>
 
@@ -57,54 +83,56 @@ export default function RegisterPage() {
               </div>
             )}
 
-              <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">
-                Lastname
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-secondary mb-2">
+                {t.auth.lastNameLabel}
               </label>
               <input
                 id="lastName"
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your lastname"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder={t.auth.lastNamePlaceholder}
+                minLength={2}
                 required
               />
             </div>
 
-              <div>
-              <label htmlFor="firstname" className="block text-sm font-medium text-gray-300 mb-2">
-                Firstname
+            <div>
+              <label htmlFor="firstname" className="block text-sm font-medium text-secondary mb-2">
+                {t.auth.firstNameLabel}
               </label>
               <input
                 id="firstName"
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your firstname"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder={t.auth.firstNamePlaceholder}
+                minLength={2}
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
+                {t.auth.emailLabel}
               </label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your email"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder={t.auth.emailPlaceholder}
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
+              <label htmlFor="password" className="block text-sm font-medium text-secondary mb-2">
+                {t.auth.passwordLabel}
               </label>
               <div className="relative">
                 <input
@@ -112,14 +140,15 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder={t.auth.passwordPlaceholder}
+                  minLength={8}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,22 +167,22 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Connexion..." : "Continue"}
+              {loading ? t.auth.registerLoading : t.auth.registerButton}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-400">
-            Don't have an account?{" "}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-              login
+          <p className="mt-6 text-center text-sm text-tertiary">
+            {t.auth.alreadyHaveAccount}{" "}
+            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              {t.auth.signIn}
             </Link>
           </p>
-            <p className="mt-0 text-center text-sm text-blue-400">
-            mot de passe oublié?{" "}
-            <Link href="/reset-password" className="text-blue-400 hover:text-blue-300 font-medium">
-               Reset Password
+          <p className="mt-2 text-center text-sm text-tertiary">
+            {t.auth.forgotPassword}{" "}
+            <Link href="/resetPassword" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              {t.auth.resetPasswordLink}
             </Link>
           </p>
         </div>

@@ -7,6 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -27,6 +28,11 @@ enum ReservationStatus {
   CANCELED
 }
 
+enum NotificationType {
+  RESERVATION_REQUEST
+  RESERVATION_CONFIRMED
+}
+
 model User {
   id               String        @id @default(cuid())
   email            String        @unique
@@ -35,12 +41,14 @@ model User {
   firstName        String
   lastName         String
   isEmailVerified  Boolean       @default(false)
+  avatarUrl        String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   
   // Relations
   reservations     Reservation[]
   events           Event[]       // Events managed by admin users
+  notifications    Notification[]
   
   @@map("users")
 }
@@ -53,16 +61,31 @@ model Event {
   location         String
   maxCapacity      Int
   remainingPlaces  Int
+  price            Float?
+  categoryId       String?
   status           EventStatus   @default(DRAFT)
+  imageUrl         String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   
   // Relations
+  category         Category?     @relation(fields: [categoryId], references: [id])
   managerId        String
   manager          User          @relation(fields: [managerId], references: [id])
   reservations     Reservation[]
   
   @@map("events")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+
+  // Relations
+  events      Event[]
+
+  @@map("categories")
 }
 
 model Reservation {
@@ -71,6 +94,7 @@ model Reservation {
   updatedAt   DateTime          @updatedAt
   status      ReservationStatus @default(PENDING)
   ticketUrl   String?
+  ticketKey   String?
   
   // Relations
   userId      String
@@ -80,4 +104,20 @@ model Reservation {
   
   @@unique([userId, eventId]) 
   @@map("reservations")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
 }
