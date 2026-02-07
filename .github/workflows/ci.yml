@@ -49,6 +49,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: api/package-lock.json
       - run: npm ci
+      - run: npm run build
       - run: npm test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
@@ -73,7 +74,7 @@ jobs:
 
   deploy-api:
     needs: [api-test, changes]
-    if: ${{ needs.changes.outputs.api == 'true' && github.event_name == 'push' }}
+    if: ${{ needs.changes.outputs.api == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -93,7 +94,7 @@ jobs:
 
   deploy-client:
     needs: [client-test, changes]
-    if: ${{ needs.changes.outputs.client == 'true' && github.event_name == 'push' }}
+    if: ${{ needs.changes.outputs.client == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

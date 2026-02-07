@@ -86,7 +86,9 @@ services:
     ports:
       - "4200:4200" 
     environment:
-      NEXT_PUBLIC_API_URL: http://api:5000
+      # Browser uses localhost; Next server (inside container) uses service DNS name
+      NEXT_PUBLIC_API_URL: http://localhost:5000
+      API_INTERNAL_URL: http://api:5000
     depends_on:
       - api
     networks:

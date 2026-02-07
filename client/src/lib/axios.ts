@@ -2,9 +2,14 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookies from 'js-cookie';
 
 const apiBaseUrl =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.URL_BACKEND ||
-  'http://localhost:5000';
+  typeof window === 'undefined'
+    ? process.env.API_INTERNAL_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      process.env.URL_BACKEND ||
+      'http://localhost:5000'
+    : process.env.NEXT_PUBLIC_API_URL ||
+      process.env.URL_BACKEND ||
+      'http://localhost:5000';
 
 const axiosInstance = axios.create({
   baseURL: apiBaseUrl,
