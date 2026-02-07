@@ -23,6 +23,7 @@ describe('ReservationService (tickets)', () => {
 
   const minioService: any = {
     refreshPresignedUrl: jest.fn(async (url: string) => url),
+    refreshPresignedUrlInternal: jest.fn(async (url: string) => url),
     uploadTicket: jest.fn(async () => {}),
     getObjectUrl: jest.fn(async () => 'http://minio/presigned'),
   };
@@ -33,7 +34,22 @@ describe('ReservationService (tickets)', () => {
     buildBadgePdf: jest.fn(async () => Buffer.from('%PDF-1.4')),
   };
 
-  const service = new ReservationService(reservationRepository, prisma, minioService, ticketsService);
+  const mailService: any = {
+    sendReservationConfirmation: jest.fn(async () => {}),
+  };
+
+  const notificationsService: any = {
+    create: jest.fn(async () => ({})),
+  };
+
+  const service = new ReservationService(
+    reservationRepository,
+    prisma,
+    minioService,
+    ticketsService,
+    mailService,
+    notificationsService,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

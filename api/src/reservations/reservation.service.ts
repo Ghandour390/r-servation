@@ -1,21 +1,27 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
 import { ReservationRepository } from './reservation.repository';
 import { PrismaService } from '../prisma/prisma.service';
 import { MinioService } from '../minio/minio.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { Reservation, ReservationStatus, Prisma } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ReservationService {
+  private readonly logger = new Logger(ReservationService.name);
+
   constructor(
     private reservationRepository: ReservationRepository,
     private prisma: PrismaService,
     private minioService: MinioService,
     private ticketsService: TicketsService,
+    private mailService: MailService,
+    private notificationsService: NotificationsService,
   ) { }
 
   async create(userId: string, eventId: string): Promise<Reservation> {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const event = await tx.event.findUnique({ where: { id: eventId } });
       if (!event) throw new NotFoundException('Event not found');
       if (event.status !== 'PUBLISHED') throw new BadRequestException('Event is not published');
@@ -34,13 +40,38 @@ export class ReservationService {
         throw new BadRequestException('No places available');
       }
 
-      return tx.reservation.create({
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { id: true, firstName: true, lastName: true, email: true },
+      });
+
+      const reservation = await tx.reservation.create({
         data: {
           user: { connect: { id: userId } },
           event: { connect: { id: eventId } },
         },
       });
+
+      return { reservation, event, user };
     });
+
+    this.runAsync(async () => {
+      try {
+        if (!result.event?.managerId) return;
+        const fullName = `${result.user?.firstName ?? ''} ${result.user?.lastName ?? ''}`.trim() || 'Un participant';
+        await this.notificationsService.create({
+          userId: result.event.managerId,
+          type: 'RESERVATION_REQUEST',
+          title: 'Nouvelle réservation',
+          message: `${fullName} a réservé l'événement "${result.event.title}".`,
+          link: '/dashboard/admin/reservations',
+        });
+      } catch (error) {
+        this.logger.error(`Failed to create admin notification: ${error.message}`);
+      }
+    });
+
+    return result.reservation;
   }
 
   async findAll(filters?: { search?: string; category?: string }): Promise<Reservation[]> {
@@ -76,10 +107,13 @@ export class ReservationService {
   }
 
   async updateStatus(id: string, status: ReservationStatus, userId: string): Promise<Reservation> {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const reservation = await tx.reservation.findUnique({
         where: { id },
-        include: { event: true },
+        include: {
+          event: true,
+          user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        },
       }) as any;
       if (!reservation) throw new NotFoundException('Reservation not found');
       if (reservation.event.managerId !== userId) throw new ForbiddenException('Not authorized');
@@ -98,8 +132,37 @@ export class ReservationService {
         });
       }
 
-      return updated;
+      return { updated, reservation, previousStatus };
     });
+
+    const shouldNotifyParticipant = result.previousStatus !== 'CONFIRMED' && status === 'CONFIRMED';
+    if (shouldNotifyParticipant && result.reservation?.user?.email) {
+      const participant = result.reservation.user;
+      const eventTitle = result.reservation.event?.title ?? 'Votre événement';
+      this.runAsync(async () => {
+        try {
+          await this.mailService.sendReservationConfirmation(participant.email, eventTitle);
+        } catch (error) {
+          this.logger.error(`Failed to send confirmation email: ${error.message}`);
+        }
+      });
+
+      this.runAsync(async () => {
+        try {
+          await this.notificationsService.create({
+            userId: participant.id,
+            type: 'RESERVATION_CONFIRMED',
+            title: 'Réservation confirmée',
+            message: `Votre réservation pour "${eventTitle}" a été confirmée.`,
+            link: '/dashboard/participant/reservations',
+          });
+        } catch (error) {
+          this.logger.error(`Failed to create participant notification: ${error.message}`);
+        }
+      });
+    }
+
+    return result.updated;
   }
 
   async delete(id: string, userId: string): Promise<Reservation> {
@@ -164,10 +227,10 @@ export class ReservationService {
     }
 
     const refreshedEventImageUrl = reservation.event?.imageUrl
-      ? await this.minioService.refreshPresignedUrl(reservation.event.imageUrl, 24 * 60 * 60)
+      ? await this.minioService.refreshPresignedUrlInternal(reservation.event.imageUrl, 24 * 60 * 60)
       : undefined;
 
-    const refreshedAvatarUrl = await this.minioService.refreshPresignedUrl(
+    const refreshedAvatarUrl = await this.minioService.refreshPresignedUrlInternal(
       reservation.user.avatarUrl,
       24 * 60 * 60
     );
@@ -183,5 +246,13 @@ export class ReservationService {
     });
 
     return { ticketUrl };
+  }
+
+  private runAsync(task: () => Promise<void>) {
+    setImmediate(() => {
+      task().catch((error) => {
+        this.logger.error(`Async task failed: ${error.message}`);
+      });
+    });
   }
 }

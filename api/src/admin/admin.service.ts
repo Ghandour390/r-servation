@@ -91,13 +91,13 @@ export class AdminService {
         }
 
         const refreshedEventImageUrl = event.imageUrl
-            ? await this.minioService.refreshPresignedUrl(event.imageUrl, 60 * 60)
+            ? await this.minioService.refreshPresignedUrlInternal(event.imageUrl, 60 * 60)
             : undefined;
 
         const participants = await Promise.all(
             (event.reservations || []).map(async (reservation: any) => {
                 const avatarUrl = reservation.user?.avatarUrl
-                    ? await this.minioService.refreshPresignedUrl(reservation.user.avatarUrl, 60 * 60)
+                    ? await this.minioService.refreshPresignedUrlInternal(reservation.user.avatarUrl, 60 * 60)
                     : null;
                 return {
                     firstName: reservation.user?.firstName,

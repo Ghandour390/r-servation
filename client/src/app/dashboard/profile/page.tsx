@@ -56,10 +56,10 @@ export default function DashboardProfilePage() {
                     password: '', // Ensure password is never undefined to avoid controlled/uncontrolled warning
                 })
             } else {
-                setError(result.error || 'Failed to load profile')
+                setError(result.error || t.profile.errors.loadProfile)
             }
         } catch (err) {
-            setError('Failed to load profile')
+            setError(t.profile.errors.loadProfile)
         } finally {
             setLoading(false)
         }
@@ -93,12 +93,12 @@ export default function DashboardProfilePage() {
             if (result.success && result.data) {
                 setUser(result.data)
                 syncAuthUser(result.data)
-                setSuccess('Avatar updated successfully')
+                setSuccess(t.profile.avatarUpdated)
             } else {
-                setError(result.error || 'Failed to upload avatar')
+                setError(result.error || t.profile.errors.uploadAvatar)
             }
         } catch (err) {
-            setError('Failed to upload avatar')
+            setError(t.profile.errors.uploadAvatar)
         } finally {
             setUploading(false)
         }
@@ -106,25 +106,25 @@ export default function DashboardProfilePage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        const trimmedFirstName = formData.firstName.trim()
-        const trimmedLastName = formData.lastName.trim()
-        const trimmedEmail = formData.email.trim()
+        const trimmedFirstName = formData.firstName?.trim() || ''
+        const trimmedLastName = formData.lastName?.trim() || ''
+        const trimmedEmail = formData.email?.trim() || ''
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (trimmedFirstName.length < 2) {
-            setError('First name must be at least 2 characters.')
+            setError(t.profile.errors.firstName)
             return
         }
         if (trimmedLastName.length < 2) {
-            setError('Last name must be at least 2 characters.')
+            setError(t.profile.errors.lastName)
             return
         }
         if (!emailRegex.test(trimmedEmail)) {
-            setError('Please enter a valid email address.')
+            setError(t.profile.errors.email)
             return
         }
         if (formData.password && formData.password.length < 8) {
-            setError('Password must be at least 8 characters.')
+            setError(t.profile.errors.password)
             return
         }
 
@@ -145,13 +145,13 @@ export default function DashboardProfilePage() {
             if (result.success && result.data) {
                 setUser(result.data)
                 syncAuthUser(result.data)
-                setSuccess('Profile updated successfully')
+                setSuccess(t.profile.profileUpdated)
                 setFormData(prev => ({ ...prev, password: '' }))
             } else {
-                setError(result.error || 'Failed to update profile')
+                setError(result.error || t.profile.errors.updateProfile)
             }
         } catch (err) {
-            setError('Failed to update profile')
+            setError(t.profile.errors.updateProfile)
         } finally {
             setUpdating(false)
         }
@@ -163,8 +163,8 @@ export default function DashboardProfilePage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-primary">{t.navbar.profile}</h1>
-                    <p className="text-secondary">Manage your personal information and account settings</p>
+                    <h1 className="text-2xl font-bold text-primary">{t.profile.title}</h1>
+                    <p className="text-secondary">{t.profile.subtitle}</p>
                 </div>
             </div>
 
@@ -215,7 +215,7 @@ export default function DashboardProfilePage() {
                         </p>
                         <div className="mt-6 pt-6 border-t border-primary text-sm text-tertiary flex items-center justify-center gap-2">
                             <CalendarIcon className="h-5 w-5" />
-                            Joined {new Date(user?.createdAt || '').toLocaleDateString()}
+                            {t.profile.joined} {new Date(user?.createdAt || '').toLocaleDateString()}
                         </div>
                     </div>
                 </div>
@@ -223,12 +223,12 @@ export default function DashboardProfilePage() {
                 {/* Right Column: Edit Form */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="dashboard-card p-6">
-                        <h3 className="text-lg font-bold text-primary mb-6">Profile Details</h3>
+                        <h3 className="text-lg font-bold text-primary mb-6">{t.profile.detailsTitle}</h3>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-secondary mb-2">First Name</label>
+                                    <label className="block text-sm font-medium text-secondary mb-2">{t.profile.firstName}</label>
                                     <div className="relative">
                                         <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-tertiary" />
                                         <input
@@ -243,7 +243,7 @@ export default function DashboardProfilePage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-secondary mb-2">Last Name</label>
+                                    <label className="block text-sm font-medium text-secondary mb-2">{t.profile.lastName}</label>
                                     <div className="relative">
                                         <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-tertiary" />
                                         <input
@@ -260,7 +260,7 @@ export default function DashboardProfilePage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-secondary mb-2">Email Address</label>
+                                <label className="block text-sm font-medium text-secondary mb-2">{t.profile.email}</label>
                                 <div className="relative">
                                     <EnvelopeIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-tertiary" />
                                     <input
@@ -275,7 +275,7 @@ export default function DashboardProfilePage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-secondary mb-2">New Password (optional)</label>
+                                <label className="block text-sm font-medium text-secondary mb-2">{t.profile.newPassword}</label>
                                 <input
                                     type="password"
                                     name="password"
@@ -305,7 +305,7 @@ export default function DashboardProfilePage() {
                                     disabled={updating}
                                     className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50 transition-all"
                                 >
-                                    {updating ? 'Updating...' : 'Update Profile'}
+                                    {updating ? t.profile.updating : t.profile.update}
                                 </button>
                             </div>
                         </form>

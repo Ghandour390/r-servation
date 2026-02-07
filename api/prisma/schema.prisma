@@ -28,6 +28,11 @@ enum ReservationStatus {
   CANCELED
 }
 
+enum NotificationType {
+  RESERVATION_REQUEST
+  RESERVATION_CONFIRMED
+}
+
 model User {
   id               String        @id @default(cuid())
   email            String        @unique
@@ -43,6 +48,7 @@ model User {
   // Relations
   reservations     Reservation[]
   events           Event[]       // Events managed by admin users
+  notifications    Notification[]
   
   @@map("users")
 }
@@ -98,4 +104,20 @@ model Reservation {
   
   @@unique([userId, eventId]) 
   @@map("reservations")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@map("notifications")
 }

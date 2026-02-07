@@ -11,7 +11,8 @@ import {
     XMarkIcon,
     UserGroupIcon,
     TagIcon,
-    UserCircleIcon
+    UserCircleIcon,
+    BellIcon
 } from '@heroicons/react/24/outline'
 import { useTranslation } from '@/hooks/useTranslation'
 
@@ -56,7 +57,12 @@ export default function Sidebar({ role, isOpen = true, onClose }: SidebarProps) 
     ]
 
     const navigation = role === 'ADMIN' ? adminLinks : participantLinksRefined
+    const notificationsHref = role === 'ADMIN'
+        ? '/dashboard/admin/notifications'
+        : '/dashboard/participant/notifications'
+
     const commonNavigation = [
+        { name: t.sidebar.notifications, href: notificationsHref, icon: BellIcon },
         { name: t.navbar.profile, href: '/dashboard/profile', icon: UserCircleIcon },
     ]
 

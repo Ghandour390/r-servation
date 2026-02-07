@@ -29,6 +29,7 @@ export const translations = {
             categories: "Categories",
             users: "Users",
             export: "Export Data",
+            notifications: "Notifications",
             logout: "Logout",
             backToHome: "Back to Home",
         },
@@ -183,6 +184,44 @@ export const translations = {
             myEvents: "My Events",
             logout: "Logout"
         },
+        notifications: {
+            title: "Notifications",
+            subtitle: "Stay up to date with reservations and updates",
+            empty: "No notifications yet",
+            markAll: "Mark all as read",
+            markRead: "Mark read",
+            refresh: "Refresh",
+            loadMore: "Load more",
+            open: "Open",
+            unreadOnly: "Unread only",
+            types: {
+                reservationRequest: "New reservation",
+                reservationConfirmed: "Reservation confirmed"
+            }
+        },
+        profile: {
+            title: "Profile",
+            subtitle: "Manage your personal information and account settings",
+            detailsTitle: "Profile Details",
+            firstName: "First Name",
+            lastName: "Last Name",
+            email: "Email Address",
+            newPassword: "New Password (optional)",
+            update: "Update Profile",
+            updating: "Updating...",
+            joined: "Joined",
+            avatarUpdated: "Avatar updated successfully",
+            profileUpdated: "Profile updated successfully",
+            errors: {
+                loadProfile: "Failed to load profile",
+                uploadAvatar: "Failed to upload avatar",
+                updateProfile: "Failed to update profile",
+                firstName: "First name must be at least 2 characters.",
+                lastName: "Last name must be at least 2 characters.",
+                email: "Please enter a valid email address.",
+                password: "Password must be at least 8 characters."
+            }
+        },
         auth: {
             loginTitle: "Sign in to your account",
             registerTitle: "Sign up for an account",
@@ -300,6 +339,7 @@ export const translations = {
             categories: "Catégories",
             users: "Utilisateurs",
             export: "Exporter les données",
+            notifications: "Notifications",
             logout: "Déconnexion",
             backToHome: "Retour à l'accueil",
         },
@@ -454,6 +494,44 @@ export const translations = {
             myEvents: "Mes Événements",
             logout: "Déconnexion"
         },
+        notifications: {
+            title: "Notifications",
+            subtitle: "Restez informé des réservations et des mises à jour",
+            empty: "Aucune notification pour le moment",
+            markAll: "Tout marquer comme lu",
+            markRead: "Marquer comme lu",
+            refresh: "Actualiser",
+            loadMore: "Charger plus",
+            open: "Ouvrir",
+            unreadOnly: "Non lues seulement",
+            types: {
+                reservationRequest: "Nouvelle réservation",
+                reservationConfirmed: "Réservation confirmée"
+            }
+        },
+        profile: {
+            title: "Profil",
+            subtitle: "Gérez vos informations personnelles et les paramètres du compte",
+            detailsTitle: "Détails du profil",
+            firstName: "Prénom",
+            lastName: "Nom",
+            email: "Adresse e-mail",
+            newPassword: "Nouveau mot de passe (optionnel)",
+            update: "Mettre à jour le profil",
+            updating: "Mise à jour...",
+            joined: "Inscrit le",
+            avatarUpdated: "Photo de profil mise à jour avec succès",
+            profileUpdated: "Profil mis à jour avec succès",
+            errors: {
+                loadProfile: "Échec du chargement du profil",
+                uploadAvatar: "Échec du téléchargement de la photo",
+                updateProfile: "Échec de la mise à jour du profil",
+                firstName: "Le prénom doit contenir au moins 2 caractères.",
+                lastName: "Le nom doit contenir au moins 2 caractères.",
+                email: "Veuillez entrer une adresse e-mail valide.",
+                password: "Le mot de passe doit contenir au moins 8 caractères."
+            }
+        },
         auth: {
             loginTitle: "Connectez-vous à votre compte",
             registerTitle: "Créer un compte",
@@ -571,6 +649,7 @@ export const translations = {
             categories: "الفئات",
             users: "المستخدمين",
             export: "تصدير البيانات",
+            notifications: "الإشعارات",
             logout: "تسجيل الخروج",
             backToHome: "العودة للرئيسية",
         },
@@ -724,6 +803,44 @@ export const translations = {
             profile: "الملف الشخصي",
             myEvents: "فعالياتي",
             logout: "تسجيل الخروج"
+        },
+        notifications: {
+            title: "الإشعارات",
+            subtitle: "ابقَ على اطلاع بالحجوزات والتحديثات",
+            empty: "لا توجد إشعارات بعد",
+            markAll: "تعليم الكل كمقروء",
+            markRead: "تعليم كمقروء",
+            refresh: "تحديث",
+            loadMore: "عرض المزيد",
+            open: "فتح",
+            unreadOnly: "غير المقروءة فقط",
+            types: {
+                reservationRequest: "حجز جديد",
+                reservationConfirmed: "تم تأكيد الحجز"
+            }
+        },
+        profile: {
+            title: "الملف الشخصي",
+            subtitle: "إدارة معلوماتك الشخصية وإعدادات الحساب",
+            detailsTitle: "تفاصيل الملف الشخصي",
+            firstName: "الاسم الشخصي",
+            lastName: "الاسم العائلي",
+            email: "البريد الإلكتروني",
+            newPassword: "كلمة مرور جديدة (اختياري)",
+            update: "تحديث الملف الشخصي",
+            updating: "جارٍ التحديث...",
+            joined: "تاريخ الانضمام",
+            avatarUpdated: "تم تحديث الصورة الشخصية بنجاح",
+            profileUpdated: "تم تحديث الملف الشخصي بنجاح",
+            errors: {
+                loadProfile: "فشل تحميل الملف الشخصي",
+                uploadAvatar: "فشل رفع الصورة",
+                updateProfile: "فشل تحديث الملف الشخصي",
+                firstName: "يجب أن يكون الاسم الشخصي حرفين على الأقل.",
+                lastName: "يجب أن يكون الاسم العائلي حرفين على الأقل.",
+                email: "يرجى إدخال بريد إلكتروني صحيح.",
+                password: "يجب أن تكون كلمة المرور 8 أحرف على الأقل."
+            }
         },
         auth: {
             loginTitle: "تسجيل الدخول إلى حسابك",

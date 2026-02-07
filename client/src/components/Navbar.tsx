@@ -1,23 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bars3Icon, XMarkIcon, SunIcon, MoonIcon, UserCircleIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon, SunIcon, MoonIcon, UserCircleIcon, BellIcon } from '@heroicons/react/24/outline'
 import { useTheme } from 'next-themes'
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks'
 import { loadUser, clearUser } from '@/lib/redux/slices/authSlice'
 import LanguageSwitcher from './LanguageSwitcher'
 import { useTranslation } from '@/hooks/useTranslation'
+import {
+  getNotificationsAction,
+  getUnreadNotificationsCountAction,
+  markNotificationReadAction,
+  NotificationItem,
+} from '@/lib/actions/notifications'
 
 export default function Navbar() {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notifications, setNotifications] = useState<NotificationItem[]>([])
+  const [notificationsLoading, setNotificationsLoading] = useState(false)
+  const [notificationsError, setNotificationsError] = useState<string | null>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const notificationsRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const dispatch = useAppDispatch()
   const { user, isAuthenticated, isLoaded } = useAppSelector((state) => state.auth)
+  const notificationsHref = user?.role === 'ADMIN'
+    ? '/dashboard/admin/notifications'
+    : '/dashboard/participant/notifications'
   useEffect(() => {
     dispatch(loadUser())
   }, [dispatch])
@@ -33,6 +48,87 @@ export default function Navbar() {
     { name: t.navbar.events, href: '/events' },
   ]
   const isActive = (path: string) => pathname === path
+
+  useEffect(() => {
+    if (!showNotifications) return
+    let isMounted = true
+    const fetchNotifications = async () => {
+      setNotificationsLoading(true)
+      setNotificationsError(null)
+      const result = await getNotificationsAction({ limit: 5 })
+      if (!isMounted) return
+      if (result.success && result.data) {
+        setNotifications(result.data)
+      } else {
+        setNotificationsError(result.error || t.common.error)
+      }
+      setNotificationsLoading(false)
+    }
+    fetchNotifications()
+    getUnreadNotificationsCountAction().then((result) => {
+      if (!isMounted) return
+      if (result.success && typeof result.count === 'number') {
+        setUnreadCount(result.count)
+      }
+    })
+    return () => {
+      isMounted = false
+    }
+  }, [showNotifications, t.common.error])
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setUnreadCount(0)
+      return
+    }
+    let isMounted = true
+    const fetchUnreadCount = async () => {
+      const result = await getUnreadNotificationsCountAction()
+      if (!isMounted) return
+      if (result.success && typeof result.count === 'number') {
+        setUnreadCount(result.count)
+      }
+    }
+    fetchUnreadCount()
+    return () => {
+      isMounted = false
+    }
+  }, [isAuthenticated, user?.id])
+
+  useEffect(() => {
+    if (!showNotifications) return
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!notificationsRef.current) return
+      if (!notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showNotifications])
+
+  const handleNotificationClick = async (notification: NotificationItem) => {
+    if (!notification.isRead) {
+      await markNotificationReadAction(notification.id)
+      setNotifications((prev) =>
+        prev.map((item) => (item.id === notification.id ? { ...item, isRead: true } : item))
+      )
+      setUnreadCount((prev) => (prev > 0 ? prev - 1 : 0))
+    }
+    setShowNotifications(false)
+  }
+
+  const formatNotificationDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleString()
+    } catch {
+      return dateString
+    }
+  }
+
+  const unreadCountLabel = unreadCount > 99 ? '99+' : String(unreadCount)
 
   return (
     <nav className="fixed top-0 w-full bg-primary/95 backdrop-blur-sm border-b border-primary z-50">
@@ -80,6 +176,83 @@ export default function Navbar() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            {isAuthenticated && user && (
+              <div className="relative" ref={notificationsRef}>
+                <button
+                  onClick={() => {
+                    setShowNotifications((prev) => !prev)
+                    setShowUserMenu(false)
+                  }}
+                  className="relative p-2 text-tertiary hover:text-secondary transition-colors"
+                  title={t.sidebar.notifications}
+                >
+                  <BellIcon className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold flex items-center justify-center">
+                      {unreadCountLabel}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 bg-primary border border-primary rounded-lg shadow-lg py-2 z-50">
+                    <div className="flex items-center justify-between px-4 pb-2 border-b border-primary">
+                      <span className="text-sm font-semibold text-primary">
+                        {t.notifications?.title || 'Notifications'}
+                      </span>
+                      <Link
+                        href={notificationsHref}
+                        className="text-xs text-indigo-500 hover:text-indigo-600"
+                        onClick={() => setShowNotifications(false)}
+                      >
+                        {t.common.viewAll}
+                      </Link>
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto">
+                      {notificationsLoading && (
+                        <div className="px-4 py-6 text-center text-tertiary text-sm">
+                          {t.common.loading}
+                        </div>
+                      )}
+                      {notificationsError && !notificationsLoading && (
+                        <div className="px-4 py-4 text-sm text-red-500">
+                          {notificationsError}
+                        </div>
+                      )}
+                      {!notificationsLoading && !notificationsError && notifications.length === 0 && (
+                        <div className="px-4 py-6 text-center text-tertiary text-sm">
+                          {t.notifications?.empty || 'No notifications yet'}
+                        </div>
+                      )}
+                      {!notificationsLoading && notifications.map((notification) => (
+                        <Link
+                          key={notification.id}
+                          href={notification.link || notificationsHref}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={`block px-4 py-3 border-b border-primary last:border-b-0 hover:bg-secondary transition-colors ${
+                            notification.isRead ? '' : 'bg-indigo-500/5'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-primary">{notification.title}</p>
+                              <p className="text-xs text-secondary">{notification.message}</p>
+                              <p className="text-[11px] text-tertiary mt-1">
+                                {formatNotificationDate(notification.createdAt)}
+                              </p>
+                            </div>
+                            {!notification.isRead && (
+                              <span className="mt-1 h-2 w-2 rounded-full bg-indigo-500" />
+                            )}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             <LanguageSwitcher />
             {/* Theme toggle */}
             <button
@@ -114,6 +287,13 @@ export default function Navbar() {
 
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-primary border border-primary rounded-lg shadow-lg py-1 z-50">
+                      <Link
+                        href={notificationsHref}
+                        className="block px-4 py-2 text-secondary hover:bg-secondary"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        {t.sidebar.notifications}
+                      </Link>
                       <Link
                         href="/dashboard/profile"
                         className="block px-4 py-2 text-secondary hover:bg-secondary"
@@ -210,6 +390,13 @@ export default function Navbar() {
                           {user.firstName} {user.lastName}
                         </span>
                       </div>
+                      <Link
+                        href={notificationsHref}
+                        className="block px-3 py-2 text-base font-medium text-secondary hover:bg-secondary rounded-md"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {t.sidebar.notifications}
+                      </Link>
                       <Link
                         href="/dashboard/profile"
                         className="block px-3 py-2 text-base font-medium text-secondary hover:bg-secondary rounded-md"

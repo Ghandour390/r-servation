@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from '../auth/user.repository';
+import { MinioService } from '../minio/minio.service';
 import { User, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-    constructor(private userRepository: UserRepository) { }
+    constructor(
+        private userRepository: UserRepository,
+        private minioService: MinioService,
+    ) { }
 
     async findAll(): Promise<User[]> {
         return this.userRepository.findMany({
@@ -16,6 +20,13 @@ export class UserService {
     async findProfile(userId: string): Promise<User> {
         const user = await this.userRepository.findById(userId);
         if (!user) throw new NotFoundException('User not found');
+        if (user.avatarUrl) {
+            const refreshed = await this.minioService.refreshPresignedUrl(
+                user.avatarUrl,
+                7 * 24 * 60 * 60,
+            );
+            return { ...user, avatarUrl: refreshed };
+        }
         return user;
     }
 
