@@ -1,4 +1,4 @@
-# Reservation / EventHub - Documentation en français
+# Reservation / EventHub 
 
 ## Présentation
 

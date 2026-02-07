@@ -26,11 +26,14 @@ describe('MinioService', () => {
       presignedGetObject: jest.fn(async () => 'http://minio/presigned'),
       bucketExists: jest.fn(async () => true),
     };
+    (service as any).publicMinioClient = {
+      presignedGetObject: jest.fn(async () => 'http://minio/presigned'),
+    };
 
     const url = await service.getObjectDownloadUrl('tickets/x.pdf', 60, 'myfile.pdf', 'application/pdf');
 
     expect(url).toBe('http://minio/presigned');
-    expect((service as any).minioClient.presignedGetObject).toHaveBeenCalledWith(
+    expect((service as any).publicMinioClient.presignedGetObject).toHaveBeenCalledWith(
       'event-tickets',
       'tickets/x.pdf',
       60,
