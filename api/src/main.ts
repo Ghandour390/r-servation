@@ -5,9 +5,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter, AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { winstonLogger } from './logger/winston.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { logger: winstonLogger });
 
 
   const origins = process.env.FRONTEND_URL?.split(',') || ['http://172.20.64.1:4200', 'http://localhost:4200'];
@@ -58,8 +59,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 5000, () =>
-    console.log(`Server is running on port ${process.env.PORT ?? 5000}`));
+  const port = Number(process.env.PORT ?? 5000);
+  await app.listen(port);
+  new Logger('Bootstrap').log(`Server is running on port ${port}`);
 
 }
 bootstrap();

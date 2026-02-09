@@ -10,7 +10,7 @@ interface Column<T> {
     sortable?: boolean
 }
 
-interface DataTableProps<T> {
+interface DataTableResponsiveProps<T> {
     columns: Column<T>[]
     data: T[]
     keyField: keyof T
@@ -20,34 +20,29 @@ interface DataTableProps<T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function DataTable<T extends Record<string, any>>({
+export default function DataTableResponsive<T extends Record<string, any>>({
     columns,
     data,
     keyField,
     pageSize = 10,
     onRowClick,
     emptyMessage = 'No data available',
-}: DataTableProps<T>) {
+}: DataTableResponsiveProps<T>) {
     const [currentPage, setCurrentPage] = useState(1)
     const [sortColumn, setSortColumn] = useState<string | null>(null)
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
-    // Sort data
     const sortedData = [...data].sort((a, b) => {
         if (!sortColumn) return 0
-
         const aValue = a[sortColumn as keyof T]
         const bValue = b[sortColumn as keyof T]
-
         if (aValue === bValue) return 0
         if (aValue === null || aValue === undefined) return 1
         if (bValue === null || bValue === undefined) return -1
-
         const comparison = aValue < bValue ? -1 : 1
         return sortDirection === 'asc' ? comparison : -comparison
     })
 
-    // Paginate data
     const totalPages = Math.ceil(sortedData.length / pageSize)
     const startIndex = (currentPage - 1) * pageSize
     const paginatedData = sortedData.slice(startIndex, startIndex + pageSize)
@@ -84,7 +79,7 @@ export default function DataTable<T extends Record<string, any>>({
 
     return (
         <div className="w-full">
-            {/* Desktop Table */}
+            {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                     <thead>
@@ -92,8 +87,7 @@ export default function DataTable<T extends Record<string, any>>({
                             {columns.map((column) => (
                                 <th
                                     key={String(column.key)}
-                                    className={`px-4 py-3 text-left text-xs font-semibold text-tertiary uppercase tracking-wider ${column.sortable ? 'cursor-pointer hover:text-secondary' : ''
-                                        }`}
+                                    className={`px-4 py-3 text-left text-xs font-semibold text-tertiary uppercase tracking-wider ${column.sortable ? 'cursor-pointer hover:text-secondary' : ''}`}
                                     onClick={() => column.sortable && handleSort(String(column.key))}
                                 >
                                     <div className="flex items-center space-x-1">
@@ -129,20 +123,18 @@ export default function DataTable<T extends Record<string, any>>({
                 </table>
             </div>
 
-            {/* Mobile Cards */}
+            {/* Mobile Card View */}
             <div className="md:hidden space-y-4">
                 {paginatedData.map((item) => (
                     <div
                         key={String(item[keyField])}
-                        className={`dashboard-card p-4 ${onRowClick ? 'cursor-pointer active:scale-98' : ''}`}
+                        className={`dashboard-card p-4 ${onRowClick ? 'cursor-pointer' : ''}`}
                         onClick={() => onRowClick?.(item)}
                     >
                         {columns.map((column) => (
                             <div key={String(column.key)} className="flex justify-between items-start py-2 border-b border-primary last:border-b-0">
-                                <span className="text-xs font-semibold text-tertiary uppercase tracking-wide">
-                                    {column.header}
-                                </span>
-                                <span className="text-sm text-secondary text-right ml-4 font-medium">
+                                <span className="text-xs font-semibold text-tertiary uppercase">{column.header}</span>
+                                <span className="text-sm text-secondary text-right ml-4">
                                     {column.render
                                         ? column.render(item)
                                         : String(getValue(item, String(column.key)) ?? '')}
@@ -155,7 +147,7 @@ export default function DataTable<T extends Record<string, any>>({
 
             {/* Pagination */}
             {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-primary">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 py-3 border-t border-primary mt-4">
                     <div className="text-sm text-tertiary text-center sm:text-left">
                         Showing {startIndex + 1} to {Math.min(startIndex + pageSize, data.length)} of {data.length} results
                     </div>

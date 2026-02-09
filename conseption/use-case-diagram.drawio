@@ -1,26 +1,29 @@
 <mxfile host="65bd71144e">
     <diagram name="Use Case Diagram" id="use-case-diagram">
-        <mxGraphModel dx="983" dy="546" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+        <mxGraphModel dx="754" dy="663" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
                 <mxCell id="system-boundary" value="Système de Réservation d&#39;Événements" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=14;" parent="1" vertex="1">
-                    <mxGeometry x="300" y="50" width="600" height="700" as="geometry"/>
+                    <mxGeometry x="300" y="90" width="600" height="770" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-register" value="S&#39;inscrire" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
                     <mxGeometry x="50" y="80" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="uc-login" value="Se connecter" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
+                <mxCell id="uc-login" value="Se connecter" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="system-boundary" vertex="1">
                     <mxGeometry x="200" y="80" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="uc-view-events" value="Consulter les événements" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
+                <mxCell id="uc-view-events" value="Consulter les événements" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="system-boundary" vertex="1">
                     <mxGeometry x="50" y="180" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="uc-search-events" value="Rechercher un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
+                <mxCell id="uc-search-events" value="Rechercher un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="system-boundary" vertex="1">
                     <mxGeometry x="200" y="180" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-make-reservation" value="Faire une réservation" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="440" y="180" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="390" y="180" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="" style="edgeStyle=none;html=1;endArrow=none;endFill=0;" edge="1" parent="system-boundary" source="uc-cancel-reservation" target="uc-view-reservations">
+                    <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-cancel-reservation" value="Annuler une réservation" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
                     <mxGeometry x="50" y="280" width="120" height="60" as="geometry"/>
@@ -31,26 +34,57 @@
                 <mxCell id="uc-download-ticket" value="Télécharger le billet" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="system-boundary" vertex="1">
                     <mxGeometry x="350" y="280" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="uc-create-event" value="Créer un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="50" y="400" width="120" height="60" as="geometry"/>
-                </mxCell>
                 <mxCell id="uc-edit-event" value="Modifier un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="200" y="400" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="200" y="460" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-publish-event" value="Publier un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="350" y="400" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="350" y="510" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-cancel-event" value="Annuler un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="50" y="500" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="50" y="560" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-manage-reservations" value="Gérer les réservations" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="200" y="500" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="200" y="540" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-view-statistics" value="Consulter les statistiques" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="350" y="500" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="340" y="620" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="uc-export-data" value="Exporter les données" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
-                    <mxGeometry x="50" y="600" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="50" y="640" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc-manage-categories" value="Gérer les catégories" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
+                    <mxGeometry x="200" y="630" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc-view-notifications" value="Consulter les notifications" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="system-boundary" vertex="1">
+                    <mxGeometry x="60" y="370" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc-update-profile" value="Modifier son profil" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="system-boundary" vertex="1">
+                    <mxGeometry x="210" y="355" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="uc-create-event" value="Créer un événement" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="system-boundary" vertex="1">
+                    <mxGeometry x="70" y="460" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="admin-manage-categories" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="system-boundary" source="uc-create-event" target="uc-manage-categories" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="100" y="310" as="sourcePoint"/>
+                        <mxPoint x="150" y="260" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="190" y="430"/>
+                            <mxPoint x="200" y="430"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="include-login-cancel-reservation" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" parent="system-boundary" edge="1">
+                    <mxGeometry x="0.5076" y="10" width="160" relative="1" as="geometry">
+                        <mxPoint x="102.43" y="280" as="sourcePoint"/>
+                        <mxPoint x="210.00359312880704" y="131.21320343559648" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="180" y="280"/>
+                            <mxPoint x="180" y="170"/>
+                            <mxPoint x="180" y="140"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="participant-actor" value="Participant" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
                     <mxGeometry x="150" y="200" width="30" height="60" as="geometry"/>
@@ -64,6 +98,7 @@
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
                             <mxPoint x="180" y="160"/>
+                            <mxPoint x="350" y="160"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -72,8 +107,8 @@
                         <mxPoint x="400" y="400" as="sourcePoint"/>
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="180" y="100"/>
-                            <mxPoint x="500" y="100"/>
+                            <mxPoint x="180" y="120"/>
+                            <mxPoint x="500" y="120"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -95,13 +130,13 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="participant-make-reservation" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" edge="1">
+                <mxCell id="participant-make-reservation" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" edge="1" target="uc-make-reservation">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="170" y="220" as="sourcePoint"/>
                         <mxPoint x="730" y="260" as="targetPoint"/>
                         <Array as="points">
                             <mxPoint x="640" y="220"/>
-                            <mxPoint x="730" y="220"/>
+                            <mxPoint x="750" y="220"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -114,12 +149,13 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="participant-view-reservations" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="participant-actor" target="uc-view-reservations" edge="1">
+                <mxCell id="participant-view-reservations" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=none;startFill=0;" parent="1" source="participant-actor" target="uc-view-reservations" edge="1">
                     <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="400" y="400" as="sourcePoint"/>
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="180" y="400"/>
+                            <mxPoint x="180" y="340"/>
+                            <mxPoint x="500" y="340"/>
                             <mxPoint x="500" y="400"/>
                         </Array>
                     </mxGeometry>
@@ -130,6 +166,8 @@
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
                             <mxPoint x="180" y="400"/>
+                            <mxPoint x="180" y="430"/>
+                            <mxPoint x="650" y="430"/>
                             <mxPoint x="650" y="400"/>
                         </Array>
                     </mxGeometry>
@@ -139,9 +177,8 @@
                         <mxPoint x="400" y="400" as="sourcePoint"/>
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="180" y="100"/>
-                            <mxPoint x="470" y="100"/>
-                            <mxPoint x="500" y="100"/>
+                            <mxPoint x="180" y="120"/>
+                            <mxPoint x="500" y="120"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -192,6 +229,7 @@
                         <mxPoint x="400" y="400" as="sourcePoint"/>
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
+                            <mxPoint x="420" y="520"/>
                             <mxPoint x="650" y="520"/>
                         </Array>
                     </mxGeometry>
@@ -201,28 +239,56 @@
                         <mxPoint x="400" y="400" as="sourcePoint"/>
                         <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="180" y="680"/>
+                            <mxPoint x="180" y="760"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="include-login-make-reservation" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="uc-make-reservation" target="uc-login" edge="1">
-                    <mxGeometry width="160" relative="1" as="geometry">
+                <mxCell id="participant-view-notifications" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="participant-actor" target="uc-view-notifications" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
                         <mxPoint x="400" y="400" as="sourcePoint"/>
-                        <mxPoint x="560" y="400" as="targetPoint"/>
+                        <mxPoint x="450" y="350" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="800" y="190"/>
-                            <mxPoint x="710" y="190"/>
+                            <mxPoint x="180" y="460"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="include-login-view-reservations" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="uc-view-reservations" target="uc-login" edge="1">
-                    <mxGeometry width="160" relative="1" as="geometry">
+                <mxCell id="participant-update-profile" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="participant-actor" target="uc-update-profile" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="400" y="400" as="sourcePoint"/>
+                        <mxPoint x="450" y="350" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="180" y="460"/>
+                            <mxPoint x="510" y="450"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="admin-view-notifications" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="admin-actor" target="uc-view-notifications" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="400" y="400" as="sourcePoint"/>
+                        <mxPoint x="450" y="350" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="180" y="460"/>
+                            <mxPoint x="180" y="490"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="include-login-update-profile" value="&amp;lt;&amp;lt;include&amp;gt;&amp;gt;" style="endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="uc-update-profile" target="uc-login" edge="1">
+                    <mxGeometry x="-0.1185" y="-15" width="160" relative="1" as="geometry">
                         <mxPoint x="400" y="400" as="sourcePoint"/>
                         <mxPoint x="560" y="400" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="650" y="320"/>
-                            <mxPoint x="650" y="190"/>
+                            <mxPoint x="640" y="440"/>
+                            <mxPoint x="630" y="190"/>
+                            <mxPoint x="560" y="190"/>
                         </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="2" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.3333333333333333;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="admin-actor" target="uc-create-event">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="180" y="520" as="sourcePoint"/>
+                        <mxPoint x="500" y="680" as="targetPoint"/>
+                        <Array as="points"/>
                     </mxGeometry>
                 </mxCell>
             </root>

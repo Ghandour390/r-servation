@@ -66,8 +66,8 @@ export default function ConfirmModal({
             />
 
             {/* Modal */}
-            <div className="flex min-h-full items-center justify-center p-4">
-                <div className="relative bg-primary rounded-xl shadow-xl max-w-md w-full p-6 transform transition-all">
+            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+                <div className="relative bg-primary rounded-xl shadow-xl max-w-md w-full p-4 sm:p-6 transform transition-all">
                     {/* Close button */}
                     <button
                         onClick={onClose}
@@ -91,18 +91,18 @@ export default function ConfirmModal({
                     </div>
 
                     {/* Actions */}
-                    <div className="mt-6 flex justify-end space-x-3">
+                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                         <button
                             onClick={onClose}
                             disabled={isLoading}
-                            className="px-4 py-2 text-sm font-medium text-secondary bg-secondary hover:bg-tertiary rounded-lg transition-colors disabled:opacity-50"
+                            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-secondary bg-secondary hover:bg-tertiary rounded-lg transition-colors disabled:opacity-50"
                         >
                             {cancelText}
                         </button>
                         <button
                             onClick={onConfirm}
                             disabled={isLoading}
-                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${variantClasses.button}`}
+                            className={`w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${variantClasses.button}`}
                         >
                             {isLoading ? (
                                 <span className="flex items-center">

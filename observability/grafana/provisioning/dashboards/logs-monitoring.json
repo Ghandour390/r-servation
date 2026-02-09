@@ -1,0 +1,94 @@
+{
+  "dashboard": {
+    "title": "Application Logs",
+    "uid": "logs-monitoring",
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Logs (All)",
+        "type": "logs",
+        "datasource": "Loki",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "{job=\"res-api\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "wrapLogMessage": true
+        }
+      },
+      {
+        "id": 2,
+        "title": "API Errors",
+        "type": "logs",
+        "datasource": "Loki",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10},
+        "targets": [
+          {
+            "expr": "{job=\"res-api\", level=\"error\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "wrapLogMessage": true
+        }
+      },
+      {
+        "id": 3,
+        "title": "All Containers Logs",
+        "type": "logs",
+        "datasource": "Loki",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "{container_name=~\".+\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "wrapLogMessage": true
+        }
+      },
+      {
+        "id": 4,
+        "title": "Log Volume by Level",
+        "type": "graph",
+        "datasource": "Loki",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "sum by (level) (count_over_time({job=\"res-api\"} | json [5m]))",
+            "refId": "A",
+            "legendFormat": "{{level}}"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Requests by Endpoint",
+        "type": "graph",
+        "datasource": "Loki",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "sum by (url) (count_over_time({job=\"res-api\"} | json | url != \"\" [5m]))",
+            "refId": "A",
+            "legendFormat": "{{url}}"
+          }
+        ]
+      }
+    ]
+  }
+}

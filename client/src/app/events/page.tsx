@@ -118,8 +118,9 @@ export default function EventsPage() {
     return (
       <div className="pt-16 min-h-screen bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t.common.loading}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, i) => (
+            {[...Array(3)].map((_, i) => (
               <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-xl h-96 animate-pulse" />
             ))}
           </div>
@@ -149,22 +150,8 @@ export default function EventsPage() {
 
   return (
     <div className="pt-16 min-h-screen bg-primary">
-      {/* Header */}
-      <section className="bg-gradient-hero py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-6">
-              {t.eventsPage.title} <span className="text-indigo-600 dark:text-indigo-400">{t.sidebar.events}</span>
-            </h1>
-            <p className="text-xl text-secondary max-w-2xl mx-auto">
-              {t.eventsPage.subtitle}
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Events Grid */}
-      <section className="py-16">
+      <section className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FilterBar
             onFilterChange={setFilters}
@@ -184,7 +171,7 @@ export default function EventsPage() {
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {events.map((event) => {
                 const isReserved = myEventIds.has(event.id)
                 const isParticipant = isAuthenticated && user?.role === 'PARTICIPANT'
@@ -198,6 +185,9 @@ export default function EventsPage() {
                         <img
                           src={event.imageUrl}
                           alt={event.title}
+                          loading="lazy"
+                          width="400"
+                          height="225"
                           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         />
                       ) : (
@@ -222,8 +212,8 @@ export default function EventsPage() {
                     </div>
 
                     {/* Event Content */}
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold text-primary mb-2 line-clamp-2">
+                    <div className="p-4 sm:p-6">
+                      <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 line-clamp-2">
                         {event.title}
                       </h3>
                       <p className="text-secondary mb-4 line-clamp-2">
@@ -241,12 +231,12 @@ export default function EventsPage() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                             {t.eventsPage.free}
                           </div>
-                          <Link href={`/events/${event.id}`} className="text-indigo-600 hover:underline text-sm font-medium">
+                          <Link href={`/events/${event.id}`} className="text-indigo-600 hover:underline text-xs sm:text-sm font-medium">
                             {t.eventsPage.viewDetails}
                           </Link>
                         </div>
@@ -255,7 +245,7 @@ export default function EventsPage() {
                           <button
                             onClick={() => handleReserve(event.id)}
                             disabled={!canReserve || reservingId === event.id}
-                            className={`w-full py-3 rounded-xl font-bold transition-all duration-200 ${isReserved
+                            className={`w-full py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base transition-all duration-200 ${isReserved
                               ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 cursor-default'
                               : event.remainingPlaces <= 0
                                 ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'

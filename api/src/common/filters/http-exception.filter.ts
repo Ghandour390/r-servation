@@ -1,4 +1,4 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -20,13 +20,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
 
-    // Log the error for debugging
-    console.error('Unhandled Exception:', exception);
+    const stack = exception instanceof Error ? exception.stack : undefined;
+    this.logger.error('Unhandled exception', stack);
 
     const status = exception instanceof HttpException
       ? exception.getStatus()

@@ -30,6 +30,19 @@ Services (local) :
 - pgAdmin : http://localhost:5050
 - MinIO : http://localhost:9000 (console : http://localhost:9001)
 - Redis : localhost:6379
+- Grafana : http://localhost:3000 (login: admin/admin by default)
+- Loki : http://localhost:3100
+
+### Logs (Grafana + Loki)
+
+Le backend log en JSON via Winston dans `api/logs/*.log`. Docker Compose lance aussi Loki + Promtail + Grafana, et Promtail ship les logs vers Loki.
+
+Dans Grafana (Explore), sÃ©lectionnez la datasource **Loki** puis testez:
+
+- `{job="res-api"}`
+- `{job="res-api", level="error"}`
+- `{job="res-api"} | json | userId="123"`
+- `{job="res-api"} | json | requestId="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"`
 
 ## Développement (sans Docker pour Node)
 

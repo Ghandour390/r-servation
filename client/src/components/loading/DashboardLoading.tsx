@@ -4,7 +4,7 @@ export default function DashboardLoading() {
     return (
         <div className="space-y-6 animate-pulse">
             {/* Stats Cards Skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="dashboard-card">
                         <div className="flex items-center justify-between">
@@ -19,7 +19,7 @@ export default function DashboardLoading() {
             </div>
 
             {/* Recent Activity Skeleton */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div className="dashboard-card">
                     <div className="h-6 w-40 bg-tertiary rounded mb-4" />
                     <div className="space-y-3">

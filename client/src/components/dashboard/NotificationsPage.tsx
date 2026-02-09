@@ -110,19 +110,19 @@ export default function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary">
+          <h1 className="text-xl sm:text-2xl font-bold text-primary">
             {t.notifications?.title || 'Notifications'}
           </h1>
-          <p className="text-secondary">
+          <p className="text-sm sm:text-base text-secondary">
             {t.notifications?.subtitle || 'Stay up to date with reservations and updates'}
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => fetchNotifications({ reset: true })}
-            className="px-4 py-2 rounded-lg border border-primary text-secondary hover:text-primary hover:bg-secondary transition-colors flex items-center space-x-2"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg border border-primary text-secondary hover:text-primary hover:bg-secondary transition-colors flex items-center justify-center gap-2 text-sm"
             disabled={actionLoading}
           >
             <ArrowPathIcon className="h-4 w-4" />
@@ -130,11 +130,12 @@ export default function NotificationsPage() {
           </button>
           <button
             onClick={handleMarkAllRead}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
             disabled={actionLoading || notifications.length === 0}
           >
             <CheckIcon className="h-4 w-4" />
-            <span>{t.notifications?.markAll || 'Mark all as read'}</span>
+            <span className="hidden sm:inline">{t.notifications?.markAll || 'Mark all as read'}</span>
+            <span className="sm:hidden">Mark all</span>
           </button>
         </div>
       </div>
@@ -167,9 +168,9 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`flex items-start justify-between py-4 ${notification.isRead ? '' : 'bg-indigo-500/5 rounded-lg px-3'}`}
+                className={`flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 py-4 ${notification.isRead ? '' : 'bg-indigo-500/5 rounded-lg px-3'}`}
               >
-                <div className="flex-1 pr-4">
+                <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-1">
                     {!notification.isRead && <span className="h-2 w-2 rounded-full bg-indigo-500" />}
                     <span className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">
@@ -180,7 +181,7 @@ export default function NotificationsPage() {
                   <p className="text-sm text-secondary">{notification.message}</p>
                   <p className="text-xs text-tertiary mt-1">{formatDate(notification.createdAt)}</p>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {notification.link && (
                     <Link
                       href={notification.link}
