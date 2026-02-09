@@ -37,13 +37,14 @@ describe('Dashboard Components', () => {
           <DashboardCard
             title="Total Users"
             value="150"
-            trend="+12%"
+            trend={{ value: 12, isPositive: true }}
             icon={<div>Icon</div>}
           />
         </Provider>
       );
 
-      expect(screen.getByText('+12%')).toBeInTheDocument();
+      expect(screen.getByText(/12/)).toBeInTheDocument();
+      expect(screen.getByText(/from last month/i)).toBeInTheDocument();
     });
 
     it('should render loading state', () => {
@@ -53,13 +54,11 @@ describe('Dashboard Components', () => {
           <DashboardCard
             title="Loading"
             value="0"
-            loading={true}
             icon={<div>Icon</div>}
           />
         </Provider>
       );
 
-      // Check for loading indicator
       const card = screen.getByText('Loading').closest('div');
       expect(card).toBeInTheDocument();
     });

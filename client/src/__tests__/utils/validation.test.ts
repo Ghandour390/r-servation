@@ -74,7 +74,7 @@ describe('Form Validation', () => {
 
   describe('Event Creation Form', () => {
     it('should validate event date is in future', () => {
-      const futureDate = new Date('2025-12-31');
+      const futureDate = new Date('2026-12-31');
       const pastDate = new Date('2020-01-01');
       const today = new Date();
 
