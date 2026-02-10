@@ -10,11 +10,7 @@ export class EventService {
     private minioService: MinioService,
   ) { }
 
-  /**
-   * Internal fetch for manager operations (update/delete/publish/cancel).
-   * Unlike `findById`, this must NOT hide non-published events because managers
-   * should be able to manage their drafts.
-   */
+ 
   private async findByIdForManagement(id: string): Promise<Event> {
     const event = await this.eventRepository.findById(id);
     if (!event) throw new NotFoundException('Event not found');

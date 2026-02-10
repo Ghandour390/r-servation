@@ -1,11 +1,18 @@
 import { PrismaClient, Role, EventStatus, ReservationStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import * as Minio from 'minio';
+import sharp from 'sharp';
+import { readFile } from 'node:fs/promises';
+import * as path from 'node:path';
 
 const prisma = new PrismaClient();
 
 const participantCount = 40;
 const eventCount = 20;
 const passwordPlain = 'Password123!';
+
+const defaultEventImageKey = 'events/default-event-1080x1920.jpg';
+const defaultEventImageExpirySeconds = 7 * 24 * 60 * 60; 
 
 const categories = [
   { name: 'Conference', description: 'Large-scale events with multiple sessions and speakers.' },
@@ -38,8 +45,146 @@ const titles = [
   'Entrepreneurship Talk',
 ];
 
+function getEnvOrThrow(name: string): string {
+  const value = process.env[name];
+  if (!value || !value.trim()) {
+    throw new Error(`Missing required env var: ${name}`);
+  }
+  return value.trim();
+}
+
+function getEnvNumber(name: string, fallback?: number): number {
+  const raw = process.env[name];
+  if (!raw || !raw.trim()) {
+    if (fallback === undefined) throw new Error(`Missing required env var: ${name}`);
+    return fallback;
+  }
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) throw new Error(`Invalid number for env var ${name}: ${raw}`);
+  return parsed;
+}
+
+function envBool(name: string, fallback = false): boolean {
+  const raw = process.env[name];
+  if (raw === undefined) return fallback;
+  return raw === 'true' || raw === '1' || raw.toLowerCase() === 'yes';
+}
+
+async function ensureDefaultEventImageUrl(): Promise<string> {
+  const endPoint = getEnvOrThrow('MINIO_ENDPOINT').replace(/^https?:\/\//, '');
+  const port = getEnvNumber('MINIO_PORT');
+  const useSSL = envBool('MINIO_USE_SSL', false);
+  const accessKey = getEnvOrThrow('MINIO_ACCESS_KEY');
+  const secretKey = getEnvOrThrow('MINIO_SECRET_KEY');
+  const region = process.env.MINIO_REGION?.trim() || 'us-east-1';
+  const bucketName = getEnvOrThrow('MINIO_BUCKET_NAME');
+
+  const minioClient = new Minio.Client({
+    endPoint,
+    port,
+    useSSL,
+    accessKey,
+    secretKey,
+    region,
+  });
+
+  const publicEndPoint = (process.env.MINIO_PUBLIC_ENDPOINT || endPoint).replace(/^https?:\/\//, '');
+  const publicPort = getEnvNumber('MINIO_PUBLIC_PORT', port);
+  const publicUseSSL = envBool('MINIO_PUBLIC_USE_SSL', useSSL);
+
+  const publicMinioClient = new Minio.Client({
+    endPoint: publicEndPoint,
+    port: publicPort,
+    useSSL: publicUseSSL,
+    accessKey,
+    secretKey,
+    region,
+  });
+
+  const bucketExists = await minioClient.bucketExists(bucketName);
+  if (!bucketExists) {
+    await minioClient.makeBucket(bucketName, region);
+  }
+
+  let exists = true;
+  try {
+    await minioClient.statObject(bucketName, defaultEventImageKey);
+  } catch {
+    exists = false;
+  }
+
+  if (!exists) {
+    const width = 1080;
+    const height = 1920;
+
+    let jpgBuffer: Buffer | null = null;
+    try {
+      const assetPath = path.resolve(__dirname, '..', 'assets', 'event.avif');
+      const avif = await readFile(assetPath);
+      jpgBuffer = await sharp(avif)
+        .resize(width, height, { fit: 'cover', position: 'attention' })
+        .modulate({ saturation: 1.1, brightness: 1.03 })
+        .jpeg({ quality: 86, mozjpeg: true })
+        .toBuffer();
+    } catch {
+      // Fallback: abstract, photo-like background (no text).
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#070a12"/>
+              <stop offset="1" stop-color="#101d35"/>
+            </linearGradient>
+            <radialGradient id="light1" cx="25%" cy="25%" r="60%">
+              <stop offset="0" stop-color="#7c3aed" stop-opacity="0.55"/>
+              <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="light2" cx="80%" cy="35%" r="70%">
+              <stop offset="0" stop-color="#06b6d4" stop-opacity="0.45"/>
+              <stop offset="1" stop-color="#06b6d4" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="blur40"><feGaussianBlur stdDeviation="40"/></filter>
+            <filter id="blur80"><feGaussianBlur stdDeviation="80"/></filter>
+          </defs>
+          <rect width="${width}" height="${height}" fill="url(#bg)"/>
+          <g filter="url(#blur80)">
+            <ellipse cx="260" cy="420" rx="420" ry="420" fill="url(#light1)"/>
+            <ellipse cx="860" cy="520" rx="520" ry="520" fill="url(#light2)"/>
+          </g>
+          <g opacity="0.18" filter="url(#blur40)">
+            <circle cx="220" cy="980" r="140" fill="#ffffff"/>
+            <circle cx="540" cy="1120" r="220" fill="#ffffff"/>
+            <circle cx="880" cy="980" r="160" fill="#ffffff"/>
+          </g>
+          <rect x="0" y="0" width="${width}" height="${height}" fill="#000" opacity="0.12"/>
+        </svg>
+      `;
+
+      jpgBuffer = await sharp(Buffer.from(svg))
+        .resize(width, height)
+        .jpeg({ quality: 86, mozjpeg: true })
+        .toBuffer();
+    }
+
+    await minioClient.putObject(
+      bucketName,
+      defaultEventImageKey,
+      jpgBuffer,
+      jpgBuffer.length,
+      {
+        'Content-Type': 'image/jpeg',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    );
+  }
+
+  return publicMinioClient.presignedGetObject(bucketName, defaultEventImageKey, defaultEventImageExpirySeconds);
+}
+
 async function main() {
   console.log('Start seeding ...');
+
+  const defaultEventImageUrl = await ensureDefaultEventImageUrl();
 
   await prisma.reservation.deleteMany();
   await prisma.event.deleteMany();
@@ -100,6 +245,7 @@ async function main() {
           maxCapacity,
           remainingPlaces: maxCapacity,
           status,
+          imageUrl: defaultEventImageUrl,
           category: { connect: { id: category.id } },
           manager: { connect: { id: admin.id } },
         },

@@ -67,7 +67,8 @@ export class ReservationService {
           link: '/dashboard/admin/reservations',
         });
       } catch (error) {
-        this.logger.error(`Failed to create admin notification: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Failed to create admin notification: ${errorMessage}`);
       }
     });
 
@@ -87,7 +88,7 @@ export class ReservationService {
         { user: { firstName: { contains: filters.search, mode: 'insensitive' } } },
         { user: { lastName: { contains: filters.search, mode: 'insensitive' } } },
         { user: { email: { contains: filters.search, mode: 'insensitive' } } },
-      ];
+      ] ;
     }
 
     return this.reservationRepository.findMany({
@@ -143,7 +144,8 @@ export class ReservationService {
         try {
           await this.mailService.sendReservationConfirmation(participant.email, eventTitle);
         } catch (error) {
-          this.logger.error(`Failed to send confirmation email: ${error.message}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          this.logger.error(`Failed to send confirmation email: ${errorMessage}`);
         }
       });
 
@@ -157,7 +159,8 @@ export class ReservationService {
             link: '/dashboard/participant/reservations',
           });
         } catch (error) {
-          this.logger.error(`Failed to create participant notification: ${error.message}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          this.logger.error(`Failed to create participant notification: ${errorMessage}`);
         }
       });
     }
@@ -251,7 +254,8 @@ export class ReservationService {
   private runAsync(task: () => Promise<void>) {
     setImmediate(() => {
       task().catch((error) => {
-        this.logger.error(`Async task failed: ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Async task failed: ${errorMessage}`);
       });
     });
   }

@@ -58,6 +58,7 @@ export default function FilterBar({ onFilterChange, placeholder, t, categories =
                 <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
+                    aria-label={t.events?.allCategories || 'All Categories'}
                     className="block w-full pl-10 pr-3 py-2.5 bg-primary border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-primary appearance-none"
                 >
                     <option value="">{t.events?.allCategories || 'All Categories'}</option>

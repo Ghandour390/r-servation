@@ -1,25 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Soft light theme (not too bright/saturated) */
+  --background: #f6f7fb;
+  --foreground: #0f172a;
   /* Global light mode colors */
-  --color-bg-primary: 255 255 255;
-  /* white */
-  --color-bg-secondary: 249 250 251;
-  /* gray-50 */
-  --color-bg-tertiary: 243 244 246;
-  /* gray-100 */
-  --color-text-primary: 17 24 39;
-  /* gray-900 */
-  --color-text-secondary: 75 85 99;
-  /* gray-600 */
-  --color-text-tertiary: 107 114 128;
-  /* gray-500 */
-  --color-border: 229 231 235;
-  /* gray-200 */
-  --color-card: 255 255 255;
-  /* white */
+  --color-bg-primary: 246 247 251;
+  --color-bg-secondary: 238 241 246;
+  --color-bg-tertiary: 229 233 240;
+  --color-text-primary: 15 23 42;
+  --color-text-secondary: 51 65 85;
+  --color-text-tertiary: 100 116 139;
+  --color-border: 210 216 224;
+  --color-card: 250 250 252;
+
+  /* Brand accent (muted indigo) */
+  --color-accent: 63 75 153;
+  --color-accent-hover: 52 64 132;
+  --color-accent-soft: 63 75 153;
 }
 
 @theme inline {
@@ -56,6 +54,11 @@
   /* gray-700 */
   --color-card: 31 41 55;
   /* gray-800 */
+
+  /* Brand accent (soft indigo for dark) */
+  --color-accent: 129 140 248;
+  --color-accent-hover: 165 180 252;
+  --color-accent-soft: 79 70 229;
 }
 
 body {
@@ -100,7 +103,7 @@ body {
 
 /* Gradient backgrounds */
 .bg-gradient-hero {
-  background: linear-gradient(to bottom right, #eef2ff, #ffffff, #ecfdf5);
+  background: linear-gradient(to bottom right, #edf0f8, #f6f7fb, #eff7f3);
 }
 
 .dark .bg-gradient-hero {
@@ -123,7 +126,7 @@ body {
 /* Button styles */
 .btn-primary {
   padding: 0.5rem 1rem;
-  background-color: #4f46e5;
+  background-color: rgb(var(--color-accent));
   color: white;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -131,29 +134,29 @@ body {
 }
 
 .btn-primary:hover {
-  background-color: #4338ca;
+  background-color: rgb(var(--color-accent-hover));
 }
 
 .btn-outline {
   padding: 0.5rem 1rem;
-  color: #4f46e5;
-  border: 1px solid #4f46e5;
+  color: rgb(var(--color-accent));
+  border: 1px solid rgb(var(--color-accent));
   border-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.2s;
 }
 
 .btn-outline:hover {
-  background-color: #eef2ff;
+  background-color: rgb(var(--color-accent-soft) / 0.08);
 }
 
 .dark .btn-outline {
-  color: #818cf8;
-  border-color: #818cf8;
+  color: rgb(var(--color-accent));
+  border-color: rgb(var(--color-accent));
 }
 
 .dark .btn-outline:hover {
-  background-color: rgba(79, 70, 229, 0.1);
+  background-color: rgb(var(--color-accent-soft) / 0.14);
 }
 
 /* Navigation styles */
@@ -166,19 +169,19 @@ body {
 }
 
 .nav-link:hover {
-  color: #4f46e5;
+  color: rgb(var(--color-accent));
 }
 
 .dark .nav-link:hover {
-  color: #818cf8;
+  color: rgb(var(--color-accent));
 }
 
 .nav-link.active {
-  color: #4f46e5;
+  color: rgb(var(--color-accent));
 }
 
 .dark .nav-link.active {
-  color: #818cf8;
+  color: rgb(var(--color-accent));
 }
 
 /* Feature box styles */
@@ -228,23 +231,23 @@ body {
   background-color: rgb(var(--color-card));
   border-radius: 0.75rem;
   padding: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--color-border));
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
   transition: all 0.2s ease-in-out;
 }
 
 .dark .dashboard-card {
-  border-color: #312e81;
+  border-color: rgb(var(--color-border));
 }
 
 .dashboard-card:hover {
   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
   transform: translateY(-2px);
-  border-color: rgba(79, 70, 229, 0.5);
+  border-color: rgb(var(--color-accent) / 0.45);
 }
 
 .dark .dashboard-card:hover {
-  border-color: #4f46e5;
+  border-color: rgb(var(--color-accent) / 0.65);
 }
 
 /* Sidebar styles */
@@ -324,8 +327,8 @@ body {
 
 .form-input:focus {
   outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: rgb(var(--color-accent));
+  box-shadow: 0 0 0 3px rgb(var(--color-accent) / 0.14);
 }
 
 .form-input::placeholder {
