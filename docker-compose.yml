@@ -170,6 +170,9 @@ services:
     container_name: res-prometheus
     ports:
       - "9090:9090"
+    depends_on:
+      - cadvisor
+      - loki
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus

@@ -144,8 +144,8 @@ export class TicketsService {
     if (eventImg) {
       try {
         doc.image(eventImg, imageBoxX, imageBoxY, { width: imageBoxW, height: imageBoxH, fit: [imageBoxW, imageBoxH] });
-      } catch {
-        // ignore
+      } catch (error) {
+        console.error('Error adding event image to PDF:', error);
       }
     } else {
       doc
@@ -161,8 +161,8 @@ export class TicketsService {
         doc.circle(imageBoxX + imageBoxW - 34, imageBoxY + imageBoxH - 34, 28).clip();
         doc.image(avatarImg, imageBoxX + imageBoxW - 62, imageBoxY + imageBoxH - 62, { width: 56, height: 56 });
         doc.restore();
-      } catch {
-        // ignore
+      } catch (error) {
+        console.error('Error adding avatar image to PDF:', error);
       }
     }
 
@@ -196,8 +196,8 @@ export class TicketsService {
     if (eventImg) {
       try {
         doc.image(eventImg, 48, doc.y, { width: 160, height: 90, fit: [160, 90] });
-      } catch {
-        // ignore
+      } catch(error) {
+        console.error('Error adding event image to PDF:', error);
       }
     }
 

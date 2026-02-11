@@ -46,6 +46,12 @@ export class EventService {
     });
   }
 
+  async getAllLocation(){
+    const events = await this.eventRepository.findMany();
+    return events.map(event => event.location);
+  }
+
+
   async findAll(userRole?: string, filters?: { search?: string; category?: string }): Promise<Event[]> {
     const where: Prisma.EventWhereInput = {};
 

@@ -1,148 +1,124 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { CalendarDaysIcon, MapPinIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline'
-import { getPublicEventsAction, Event } from '@/lib/actions/events'
-import { createReservationAction, getMyReservationsAction } from '@/lib/actions/reservations'
-import { getCategoriesAction, Category } from '@/lib/actions/categories'
-import { useTranslation } from '@/hooks/useTranslation'
-import { useAppSelector } from '@/lib/redux/hooks'
-import FilterBar from '@/components/FilterBar'
+import { cookies, headers } from 'next/headers'
+import {
+  CalendarDaysIcon,
+  MapPinIcon,
+  MagnifyingGlassIcon,
+  PhotoIcon,
+  UsersIcon,
+} from '@heroicons/react/24/outline'
+import ReserveEventForm from '@/components/events/ReserveEventForm'
+import {
+  getCategoriesServerAction,
+  getMyReservationsServerAction,
+  getPublicEventsServerAction,
+} from '@/lib/actions/events-server'
+import { translations } from '@/lib/i18n/translations'
+import type { Event } from '@/lib/actions/events'
 
-export default function EventsPage() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [myEventIds, setMyEventIds] = useState<Set<string>>(new Set())
-  const [loading, setLoading] = useState(true)
-  const [reservingId, setReservingId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [filters, setFilters] = useState({ search: '', category: '' })
-  const [categories, setCategories] = useState<Category[]>([])
-  const { t, language } = useTranslation()
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+type Language = 'en' | 'fr' | 'ar'
+type SearchParamsInput = {
+  search?: string | string[]
+  category?: string | string[]
+}
 
-  const fetchEvents = async (currentFilters = filters) => {
+function firstValue(value?: string | string[]) {
+  if (Array.isArray(value)) {
+    return value[0] || ''
+  }
+  return value || ''
+}
+
+function resolveLanguage(acceptLanguage: string | null): Language {
+  if (!acceptLanguage) {
+    return 'en'
+  }
+  const normalized = acceptLanguage.toLowerCase()
+  if (normalized.includes('ar')) {
+    return 'ar'
+  }
+  if (normalized.includes('fr')) {
+    return 'fr'
+  }
+  return 'en'
+}
+
+function formatDate(dateString: string, language: Language) {
+  return new Date(dateString).toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function formatTime(dateString: string, language: Language) {
+  return new Date(dateString).toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+export default async function EventsPage({
+  searchParams,
+}: {
+  searchParams?: SearchParamsInput | Promise<SearchParamsInput>
+}) {
+  const params = await Promise.resolve(searchParams ?? {})
+  const search = firstValue(params.search).trim()
+  const category = firstValue(params.category).trim()
+
+  const cookieStore = await cookies()
+  const headerStore = await headers()
+  const language = resolveLanguage(headerStore.get('accept-language'))
+  const t = translations[language]
+
+  const accessToken = cookieStore.get('access_token')?.value
+  const userCookie = cookieStore.get('user')?.value
+  const userRole = (() => {
+    if (!userCookie) {
+      return null
+    }
     try {
-      const result = await getPublicEventsAction(currentFilters)
-      if (result.success && result.data) {
-        setEvents(result.data)
-      } else {
-        setError(result.error || t.eventsPage.errorLoading)
-      }
-    } catch (err) {
-      setError(t.eventsPage.errorLoading)
-      console.error('Error fetching events:', err)
-    } finally {
-      setLoading(false)
+      return JSON.parse(userCookie)?.role ?? null
+    } catch {
+      return null
     }
-  }
+  })()
 
-  const fetchMyReservations = async () => {
-    if (!isAuthenticated || user?.role !== 'PARTICIPANT') return
-    try {
-      const result = await getMyReservationsAction()
-      if (result.success && result.data) {
-        const ids = new Set(result.data.map(r => r.eventId))
-        setMyEventIds(ids)
-      }
-    } catch (err) {
-      console.error('Error fetching my reservations:', err)
-    }
-  }
+  const isAuthenticated = Boolean(accessToken)
+  const isParticipant = isAuthenticated && userRole === 'PARTICIPANT'
 
-  const fetchCategories = async () => {
-    try {
-      const result = await getCategoriesAction()
-      if (result.success && result.data) {
-        setCategories(result.data)
-      }
-    } catch (err) {
-      console.error('Error fetching categories:', err)
-    }
-  }
+  const [eventsResult, categoriesResult, reservationsResult] = await Promise.all([
+    getPublicEventsServerAction({ search, category }),
+    getCategoriesServerAction(),
+    isParticipant && accessToken
+      ? getMyReservationsServerAction(accessToken)
+      : Promise.resolve({ success: true, data: [] }),
+  ])
 
-  useEffect(() => {
-    fetchEvents(filters)
-  }, [filters])
+  const events = eventsResult.data ?? []
+  const categories = categoriesResult.data ?? []
+  const reservationIds = new Set(
+    (reservationsResult.data ?? [])
+      .map((reservation) => reservation.eventId)
+      .filter((id): id is string => Boolean(id))
+  )
 
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchMyReservations()
-    }
-  }, [isAuthenticated, user?.role])
-
-  const handleReserve = async (eventId: string) => {
-    if (!isAuthenticated) return
-
-    setReservingId(eventId)
-    try {
-      const result = await createReservationAction(eventId)
-      if (result.success) {
-        alert(t.eventsPage.reservationSuccess)
-        setMyEventIds(prev => new Set([...prev, eventId]))
-        // Refresh events to update remaining places
-        fetchEvents()
-      } else {
-        alert(result.error || t.common.error)
-      }
-    } catch (err) {
-      alert(t.common.error)
-    } finally {
-      setReservingId(null)
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleTimeString(language === 'ar' ? 'ar-EG' : 'en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  if (loading) {
-    return (
-      <div className="pt-16 min-h-screen bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t.common.loading}</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-gray-200 dark:bg-gray-700 rounded-xl h-96 animate-pulse" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
+  if (!eventsResult.success && events.length === 0) {
     return (
       <div className="pt-16 min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            {t.common.error}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-8">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t.common.error}</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
+            {eventsResult.error || t.eventsPage.errorLoading}
+          </p>
+          <Link
+            href="/events"
             className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             {t.eventsPage.tryAgain}
-          </button>
+          </Link>
         </div>
       </div>
     )
@@ -150,36 +126,61 @@ export default function EventsPage() {
 
   return (
     <div className="pt-16 min-h-screen bg-primary">
-      {/* Events Grid */}
       <section className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FilterBar
-            onFilterChange={setFilters}
-            t={t}
-            placeholder={t.eventsPage.searchPlaceholder || 'Search events...'}
-            categories={categories}
-          />
+          <form method="get" className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-tertiary" />
+              </div>
+              <input
+                type="text"
+                name="search"
+                defaultValue={search}
+                placeholder={t.eventsPage.searchPlaceholder || 'Search events...'}
+                className="block w-full pl-10 pr-3 py-2.5 bg-primary border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-primary"
+              />
+            </div>
+
+            <div className="relative min-w-[200px]">
+              <select
+                name="category"
+                defaultValue={category}
+                className="block w-full px-3 py-2.5 bg-primary border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-primary appearance-none"
+              >
+                <option value="">{t.events?.allCategories || 'All Categories'}</option>
+                {categories.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button type="submit" className="btn-primary">
+              {t.common.search}
+            </button>
+
+            {(search || category) && (
+              <Link href="/events" className="btn-outline text-center">
+                {t.common.cancel}
+              </Link>
+            )}
+          </form>
 
           {events.length === 0 ? (
             <div className="text-center py-20">
               <CalendarDaysIcon className="h-16 w-16 text-tertiary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-primary mb-2">
-                {t.eventsPage.noEventsTitle}
-              </h3>
-              <p className="text-secondary">
-                {t.eventsPage.noEventsDesc}
-              </p>
+              <h3 className="text-xl font-semibold text-primary mb-2">{t.eventsPage.noEventsTitle}</h3>
+              <p className="text-secondary">{t.eventsPage.noEventsDesc}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {events.map((event) => {
-                const isReserved = myEventIds.has(event.id)
-                const isParticipant = isAuthenticated && user?.role === 'PARTICIPANT'
-                const canReserve = isParticipant && !isReserved && event.remainingPlaces > 0
+              {events.map((event: Event) => {
+                const isReserved = reservationIds.has(event.id)
 
                 return (
                   <div key={event.id} className="card overflow-hidden">
-                    {/* Event Image */}
                     <div className="aspect-video relative overflow-hidden bg-gray-100 dark:bg-gray-800">
                       {event.imageUrl ? (
                         <img
@@ -203,22 +204,17 @@ export default function EventsPage() {
                       </div>
                       <div className="absolute bottom-4 right-4 bg-primary/90 backdrop-blur-sm rounded-lg px-3 py-2">
                         <div className="text-orange-600 dark:text-orange-400 font-bold text-sm">
-                          {formatDate(event.dateTime)}
+                          {formatDate(event.dateTime, language)}
                         </div>
-                        <div className="text-secondary text-xs">
-                          {formatTime(event.dateTime)}
-                        </div>
+                        <div className="text-secondary text-xs">{formatTime(event.dateTime, language)}</div>
                       </div>
                     </div>
 
-                    {/* Event Content */}
                     <div className="p-4 sm:p-6">
                       <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 line-clamp-2">
                         {event.title}
                       </h3>
-                      <p className="text-secondary mb-4 line-clamp-2">
-                        {event.description}
-                      </p>
+                      <p className="text-secondary mb-4 line-clamp-2">{event.description}</p>
 
                       <div className="space-y-2 mb-6">
                         <div className="flex items-center text-sm text-tertiary">
@@ -236,35 +232,32 @@ export default function EventsPage() {
                           <div className="text-xl sm:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                             {t.eventsPage.free}
                           </div>
-                          <Link href={`/events/${event.id}`} className="text-indigo-600 hover:underline text-xs sm:text-sm font-medium">
+                          <Link
+                            href={`/events/${event.id}`}
+                            className="text-indigo-600 hover:underline text-xs sm:text-sm font-medium"
+                          >
                             {t.eventsPage.viewDetails}
                           </Link>
                         </div>
 
                         {isParticipant && (
-                          <button
-                            onClick={() => handleReserve(event.id)}
-                            disabled={!canReserve || reservingId === event.id}
-                            className={`w-full py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base transition-all duration-200 ${isReserved
-                              ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 cursor-default'
-                              : event.remainingPlaces <= 0
-                                ? 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50'
-                              }`}
-                          >
-                            {reservingId === event.id ? (
-                              <div className="flex items-center justify-center space-x-2">
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                <span>{t.common.loading}</span>
-                              </div>
-                            ) : isReserved ? (
-                              t.eventsPage.alreadyReserved
-                            ) : event.remainingPlaces <= 0 ? (
-                              t.eventsPage.soldOut
-                            ) : (
-                              t.eventsPage.reserve
-                            )}
-                          </button>
+                          <ReserveEventForm
+                            eventId={event.id}
+                            isAuthenticated={isAuthenticated}
+                            isParticipant={isParticipant}
+                            isReserved={isReserved}
+                            isSoldOut={event.remainingPlaces <= 0}
+                            loginHref={`/login?redirect=/events/${event.id}`}
+                            labels={{
+                              reserve: t.eventsPage.reserve,
+                              loading: t.common.loading,
+                              soldOut: t.eventsPage.soldOut,
+                              alreadyReserved: t.eventsPage.alreadyReserved,
+                              login: t.navbar.login,
+                              success: t.eventsPage.reservationSuccess,
+                              errorFallback: t.common.error,
+                            }}
+                          />
                         )}
                       </div>
                     </div>
