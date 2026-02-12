@@ -1,0 +1,630 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "count(count by (name) (container_last_seen{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}))",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Containers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Total CPU Used",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_working_set_bytes{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"})",
+          "refId": "A"
+        }
+      ],
+      "title": "Total RAM Used",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_network_receive_bytes_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}[5m])) + sum(rate(container_network_transmit_bytes_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}[5m]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Network I/O",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"}[5m]))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (container_memory_working_set_bytes{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"}) / scalar(max(machine_memory_bytes{job=\"cadvisor\",instance=\"res-cadvisor:8080\"}))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Usage % of Host by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (container_memory_working_set_bytes{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"})",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Working Set by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (rate(container_network_receive_bytes_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}[5m]))",
+          "legendFormat": "{{name}} RX",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (name) (rate(container_network_transmit_bytes_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}[5m]))",
+          "legendFormat": "{{name}} TX",
+          "refId": "B"
+        }
+      ],
+      "title": "Network RX/TX by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (rate(container_fs_sector_reads_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}[5m]) * 512) or on(name) (0 * sum by (name) (container_last_seen{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}))",
+          "legendFormat": "{{name}} read",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (name) (rate(container_fs_sector_writes_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}[5m]) * 512) or on(name) (0 * sum by (name) (container_last_seen{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}))",
+          "legendFormat": "{{name}} write",
+          "refId": "B"
+        }
+      ],
+      "title": "Disk I/O by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (time() - container_start_time_seconds{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"})",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container Uptime",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (container_spec_cpu_quota{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"} / clamp_min(container_spec_cpu_period{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"}, 1)) or on(name) (0 * sum by (name) (container_last_seen{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Limit (Cores) by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (container_spec_memory_limit_bytes{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\",image!=\"\"}) or on(name) (0 * sum by (name) (container_last_seen{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name=~\"$container\",name!=\"\"}))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Limit by Container",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Loki",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 36
+      },
+      "id": 13,
+      "maxPerRow": 3,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "repeat": "container",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "expr": "{container_name=~\"${container:regex}\"}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "24h",
+      "title": "Logs - $container",
+      "type": "logs"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": [
+    "docker",
+    "cadvisor",
+    "containers",
+    "infrastructure"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(container_cpu_usage_seconds_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",name!=\"\"}, container_label_com_docker_compose_service)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": ".*"
+        }
+      },
+      {
+        "name": "container",
+        "label": "Container",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(container_cpu_usage_seconds_total{job=\"cadvisor\",instance=\"res-cadvisor:8080\",container_label_com_docker_compose_project=\"reservation\",container_label_com_docker_compose_service=~\"$service\",name!=\"\"}, name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": ".*"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Containers Monitoring Pro",
+  "uid": "docker-monitoring",
+  "version": 1,
+  "weekStart": ""
+}

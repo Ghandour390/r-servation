@@ -8,7 +8,7 @@ import { authApi } from "@/lib/api/auth";
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [NewPassword, setNewPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [code, setCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -20,21 +20,20 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const data = await authApi.resetPassword(email, NewPassword, code);
-      // Rediriger vers la page d'accueil
-      router.push("/");
+      await authApi.resetPassword({ email, code, newPassword });
+      router.push("/login");
     } catch (err: any) {
-      setError(err.response?.data?.message || "code incorrect");
+      setError(err.response?.data?.message || "Code incorrect");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-lg shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-white text-center mb-8">
+        <div className="card p-8">
+          <h1 className="text-3xl font-bold text-primary text-center mb-8">
             Reset Password
           </h1>
 
@@ -46,7 +45,7 @@ export default function ResetPasswordPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
                 Email
               </label>
               <input
@@ -54,14 +53,14 @@ export default function ResetPasswordPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your email"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="code" className="block text-sm font-medium text-secondary mb-2">
                 Code
               </label>
               <input
@@ -69,30 +68,30 @@ export default function ResetPasswordPage() {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your verification code"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                NewPassword
+              <label htmlFor="newPassword" className="block text-sm font-medium text-secondary mb-2">
+                New Password
               </label>
               <div className="relative">
                 <input
                   id="newPassword"
                   type={showPassword ? "text" : "password"}
-                  value={NewPassword}
+                  value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="Enter your new password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-secondary"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,15 +110,16 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Connexion..." : "Continue"}
+              {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>
-          <p className="mt-6 text-center text-sm text-gray-400">
-            login ?{" "}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-              Sign up
+          
+          <p className="mt-6 text-center text-sm text-tertiary">
+            Back to{" "}
+            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              Login
             </Link>
           </p>
         </div>

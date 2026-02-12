@@ -1,5 +1,5 @@
 import { HttpExceptionFilter, AllExceptionsFilter } from './http-exception.filter';
-import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
+import { HttpException, HttpStatus, ArgumentsHost, Logger } from '@nestjs/common';
 
 describe('HttpExceptionFilter', () => {
   let filter: HttpExceptionFilter;
@@ -49,9 +49,11 @@ describe('AllExceptionsFilter', () => {
   let mockResponse: any;
   let mockRequest: any;
   let mockHost: ArgumentsHost;
+  let loggerErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     filter = new AllExceptionsFilter();
+    loggerErrorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
@@ -65,6 +67,10 @@ describe('AllExceptionsFilter', () => {
         getRequest: () => mockRequest,
       }),
     } as ArgumentsHost;
+  });
+
+  afterEach(() => {
+    loggerErrorSpy?.mockRestore();
   });
 
   it('should be defined', () => {

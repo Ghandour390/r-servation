@@ -30,11 +30,13 @@ export interface ResetPasswordData {
 
 export interface AuthResponse {
   access_token: string;
+  refresh_token?: string;
   user: {
     id: string;
     email: string;
     firstName: string;
     lastName: string;
+    avatarUrl?: string;
     role: string;
   };
 }
@@ -61,7 +63,9 @@ export const authApi = {
 
   login: async (data: LoginData): Promise<AuthResponse> => {
     const response = await axiosInstance.post('/auth/login', data);
-    return response.data;
+    const authData = response.data.data || response.data;
+
+    return authData;
   },
 
   forgotPassword: async (data: ForgotPasswordData): Promise<MessageResponse> => {

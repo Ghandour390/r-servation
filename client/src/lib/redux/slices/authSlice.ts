@@ -8,12 +8,12 @@ interface LoginCredentials {
 }
 
 interface User {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: string;
-  photo: string | null;
+  avatarUrl?: string | null;
 }
 
 interface AuthState {
@@ -87,14 +87,14 @@ export const login = createAsyncThunk(
     try {
       const data = await authApi.login(credentials);
       
-      if (!data.user || !data.access_token || !data.refresh_token) {
+      if (!data.user || !data.access_token) {
         return rejectWithValue('Login failed');
       }
       
       return {
         user: data.user,
         accessToken: data.access_token,
-        refreshToken: data.refresh_token,
+        refreshToken: data.refresh_token || '',
       };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');

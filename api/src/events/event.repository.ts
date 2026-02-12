@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 export interface IEventRepository {
   create(data: Prisma.EventCreateInput): Promise<Event>;
-  findById(id: string): Promise<Event | null>;
+  findById(id: string, options?: { include?: Prisma.EventInclude }): Promise<Event | null>;
   update(id: string, data: Prisma.EventUpdateInput): Promise<Event>;
   delete(id: string): Promise<Event>;
   findMany(params?: {
@@ -26,10 +26,10 @@ export class EventRepository implements IEventRepository {
     return this.prisma.event.create({ data });
   }
 
-  async findById(id: string): Promise<Event | null> {
+  async findById(id: string, options?: { include?: Prisma.EventInclude }): Promise<Event | null> {
     return this.prisma.event.findUnique({ 
       where: { id },
-      include: { manager: true, reservations: true }
+      ...options
     });
   }
 

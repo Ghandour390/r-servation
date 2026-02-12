@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api/auth";
 
-export default function LoginPage() {
+export default function VerificationEmailPage() {
   const router = useRouter();
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
   const [code, setCode] = useState("");
@@ -19,8 +19,6 @@ export default function LoginPage() {
 
     try {
       await authApi.verifyEmail({ email, code });
-      
-      // Rediriger vers la page d'accueil
       router.push("/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Email ou code incorrect");
@@ -30,10 +28,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-primary p-4">
       <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-lg shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Email Verification</h2>
+        <div className="card p-8">
+          <h2 className="text-2xl font-bold text-primary mb-6 text-center">Email Verification</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
@@ -43,7 +41,7 @@ export default function LoginPage() {
             )}
             
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-secondary mb-2">
                 Email
               </label>
               <input
@@ -51,14 +49,14 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your email"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="code" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="code" className="block text-sm font-medium text-secondary mb-2">
                 Verification Code
               </label>
               <input
@@ -66,7 +64,7 @@ export default function LoginPage() {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-tertiary border border-primary rounded-lg text-primary placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter your verification code"
                 required
               />
@@ -75,16 +73,16 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Verifying..." : "Verify Email"}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-400">
-            login ?{" "}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-              Sign up
+          <p className="mt-6 text-center text-sm text-tertiary">
+            Back to{" "}
+            <Link href="/login" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-medium">
+              Login
             </Link>
           </p>
         </div>
