@@ -560,10 +560,11 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "expr": "{container_name=~\"${container:regex}\", service=~\"${service:regex}\"}",
+          "expr": "{container_name=~\"${container:regex}\"}",
           "refId": "A"
         }
       ],
+      "timeFrom": "24h",
       "title": "Logs - $container",
       "type": "logs"
     }
