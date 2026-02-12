@@ -10,6 +10,14 @@ interface LanguageState {
 
 const getInitialState = (): LanguageState => {
     if (typeof window !== 'undefined') {
+        const cookieLangMatch = document.cookie.match(/(?:^|; )language=([^;]+)/);
+        const cookieLang = cookieLangMatch ? decodeURIComponent(cookieLangMatch[1]) as Language : null;
+        if (cookieLang && ['en', 'fr', 'ar'].includes(cookieLang)) {
+            return {
+                language: cookieLang,
+                direction: cookieLang === 'ar' ? 'rtl' : 'ltr',
+            };
+        }
         const savedLang = localStorage.getItem('language') as Language;
         if (savedLang && ['en', 'fr', 'ar'].includes(savedLang)) {
             return {
@@ -35,6 +43,7 @@ const languageSlice = createSlice({
             state.direction = action.payload === 'ar' ? 'rtl' : 'ltr';
             if (typeof window !== 'undefined') {
                 localStorage.setItem('language', action.payload);
+                document.cookie = `language=${action.payload}; path=/; max-age=31536000; samesite=lax`;
                 document.documentElement.dir = state.direction;
                 document.documentElement.lang = state.language;
             }

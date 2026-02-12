@@ -37,7 +37,7 @@ export interface StatsResponse {
 
 export interface ExportResponse {
     success: boolean
-    data?: string // CSV or JSON string
+    data?: string 
     error?: string
 }
 

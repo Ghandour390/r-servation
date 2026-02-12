@@ -74,6 +74,10 @@ export async function getUnreadNotificationsCountAction(): Promise<UnreadCountRe
     const data = response.data.data || response.data
     return { success: true, count: typeof data.count === 'number' ? data.count : 0 }
   } catch (error: any) {
+    const isNetworkError = !error?.response || error?.message === 'Network Error'
+    if (isNetworkError) {
+      return { success: true, count: 0 }
+    }
     console.error('Get unread notifications count error:', error.message)
     return { success: false, error: error.response?.data?.message || 'Failed to fetch unread count' }
   }

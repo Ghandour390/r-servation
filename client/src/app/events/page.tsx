@@ -29,7 +29,10 @@ function firstValue(value?: string | string[]) {
   return value || ''
 }
 
-function resolveLanguage(acceptLanguage: string | null): Language {
+function resolveLanguage(acceptLanguage: string | null, cookieLanguage: string | null): Language {
+  if (cookieLanguage && ['en', 'fr', 'ar'].includes(cookieLanguage)) {
+    return cookieLanguage as Language
+  }
   if (!acceptLanguage) {
     return 'en'
   }
@@ -70,7 +73,7 @@ export default async function EventsPage({
 
   const cookieStore = await cookies()
   const headerStore = await headers()
-  const language = resolveLanguage(headerStore.get('accept-language'))
+  const language = resolveLanguage(headerStore.get('accept-language'), cookieStore.get('language')?.value ?? null)
   const t = translations[language]
 
   const accessToken = cookieStore.get('access_token')?.value

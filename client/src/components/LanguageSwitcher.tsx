@@ -49,8 +49,10 @@ export default function LanguageSwitcher() {
                         <button
                             key={lang.code}
                             onClick={() => {
+                                document.cookie = `language=${lang.code}; path=/; max-age=31536000; samesite=lax`;
                                 changeLanguage(lang.code as 'en' | 'fr' | 'ar');
                                 setIsOpen(false);
+                                window.location.reload();
                             }}
                             className={classNames(
                                 language === lang.code ? 'font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700',
